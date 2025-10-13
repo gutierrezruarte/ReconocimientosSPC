@@ -543,9 +543,9 @@
     </div>
     
      <div id="avisos-fecha-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 no-print z-50">
-        <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl p-8 max-h-[95vh] flex flex-col">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-5xl p-8 max-h-[95vh] flex flex-col">
              <h2 class="text-2xl font-bold mb-6">Buscar Avisos por Período</h2>
-             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-4">
+             <div class="grid grid-cols-1 md:grid-cols-4 gap-4 items-end mb-4">
                  <div>
                      <label for="search-fecha-aviso-desde" class="block mb-2 text-sm font-medium text-gray-900">Fecha Desde</label>
                      <input type="date" id="search-fecha-aviso-desde" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
@@ -554,14 +554,31 @@
                     <label for="search-fecha-aviso-hasta" class="block mb-2 text-sm font-medium text-gray-900">Fecha Hasta</label>
                     <input type="date" id="search-fecha-aviso-hasta" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                 </div>
+                <div>
+                    <label for="search-encuadra-aviso" class="block mb-2 text-sm font-medium text-gray-900">Encuadre</label>
+                    <select id="search-encuadra-aviso" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                        <option value="TODOS">Todos</option>
+                        <option value="ART. 14">ART. 14</option>
+                        <option value="ART. 19">ART. 19</option>
+                        <option value="ART. 20">ART. 20</option>
+                        <option value="ART. 29">ART. 29</option>
+                        <option value="ART. 30">ART. 30</option>
+                        <option value="ART. 30 BIS">ART. 30 BIS</option>
+                        <option value="SIN JUSTIFICAR">SIN JUSTIFICAR</option>
+                    </select>
+                </div>
                  <button onclick="searchAvisosPorFecha()" class="bg-blue-600 text-white py-2.5 px-6 rounded-lg hover:bg-blue-700 transition">Buscar</button>
              </div>
              <div id="avisos-fecha-results" class="flex-grow overflow-y-auto border-t pt-4">
                 <p class="text-center text-gray-500">Seleccione un período de fechas para ver los avisos.</p>
              </div>
-             <div class="flex justify-end mt-6">
-                 <button type="button" onclick="closeAvisosFechaModal()" class="py-2 px-6 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition">Cerrar</button>
-             </div>
+             <div class="flex justify-between items-center mt-6">
+                <button type="button" onclick="exportAvisosToXLS()" class="py-2 px-6 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center space-x-2">
+                    <i class="fas fa-file-excel"></i>
+                    <span>Exportar a XLS</span>
+                </button>
+                <button type="button" onclick="closeAvisosFechaModal()" class="py-2 px-6 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition">Cerrar</button>
+            </div>
         </div>
     </div>
     
@@ -663,6 +680,7 @@
         let currentUser = null;
         let selectedRole = null;
         let currentUserUnidad = null;
+        let currentAvisosSearchResult = [];
         const unidadesDisponibles = ['TODAS', 'CC1', 'CC2', 'EP3', 'EP4', 'EP5', 'EP6', 'EP8', 'EP9', 'JEFATURA', 'EDIFICIO LAPRIDA', 'ESCUELA DE CADETES', 'ESCUELA DE SUBOFICIALES'];
 
         // Listeners
@@ -1116,8 +1134,10 @@
         function openAvisosFechaModal() { document.getElementById('avisos-fecha-modal').classList.add('flex'); document.getElementById('avisos-fecha-modal').classList.remove('hidden'); }
         function closeAvisosFechaModal() { document.getElementById('avisos-fecha-modal').classList.add('hidden'); document.getElementById('avisos-fecha-modal').classList.remove('flex'); }
         async function searchAvisosPorFecha() { 
+            currentAvisosSearchResult = [];
             const fechaDesde = document.getElementById('search-fecha-aviso-desde').value;
             const fechaHasta = document.getElementById('search-fecha-aviso-hasta').value;
+            const encuadraFiltro = document.getElementById('search-encuadra-aviso').value;
             const resultsDiv = document.getElementById('avisos-fecha-results');
             if (!fechaDesde || !fechaHasta) {
                 resultsDiv.innerHTML = '<p class="text-center text-red-500">Por favor, seleccione un período de fechas completo.</p>';
@@ -1128,20 +1148,55 @@
                 return;
             }
             resultsDiv.innerHTML = '<p class="text-center">Buscando...</p>';
-            const q = query(collection(db, "avisos"), where("fecha", ">=", fechaDesde), where("fecha", "<=", fechaHasta));
+            
+            let conditions = [where("fecha", ">=", fechaDesde), where("fecha", "<=", fechaHasta)];
+            if (encuadraFiltro && encuadraFiltro !== 'TODOS') {
+                conditions.push(where("encuadra", "==", encuadraFiltro));
+            }
+
+            const q = query(collection(db, "avisos"), ...conditions);
             const snapshot = await getDocs(q); 
+            
             if (snapshot.empty) { 
-                resultsDiv.innerHTML = '<p class="text-center">No se encontraron avisos para este período.</p>'; 
+                resultsDiv.innerHTML = '<p class="text-center">No se encontraron avisos para este período y filtro.</p>'; 
                 return; 
             } 
-            let html = '<div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-xs text-gray-700 uppercase bg-gray-50"><th class="px-4 py-2">Empleado</th><th class="px-4 py-2">Unidad</th><th class="px-4 py-2">Fecha</th><th class="px-4 py-2">Estado</th></tr></thead><tbody>'; 
+            
+            currentAvisosSearchResult = snapshot.docs.map(doc => doc.data());
+
+            let html = '<div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-xs text-gray-700 uppercase bg-gray-50"><th class="px-4 py-2">Empleado</th><th class="px-4 py-2">Unidad</th><th class="px-4 py-2">Fecha</th><th class="px-4 py-2">Estado</th><th class="px-4 py-2">Encuadre</th></tr></thead><tbody>'; 
             snapshot.forEach(doc => { 
                 const aviso = doc.data(); 
                 const statusClass = aviso.status === 'Completado' ? 'text-green-600' : 'text-yellow-600'; 
-                html += `<tr class="bg-white border-b"><td class="px-4 py-2">${aviso.empleado}</td><td class="px-4 py-2">${aviso.unidad}</td><td class="px-4 py-2">${aviso.fecha}</td><td class="px-4 py-2 font-semibold ${statusClass}">${aviso.status}</td></tr>`; 
+                html += `<tr class="bg-white border-b"><td class="px-4 py-2">${aviso.empleado}</td><td class="px-4 py-2">${aviso.unidad}</td><td class="px-4 py-2">${aviso.fecha}</td><td class="px-4 py-2 font-semibold ${statusClass}">${aviso.status}</td><td class="px-4 py-2">${aviso.encuadra || 'N/A'}</td></tr>`; 
             }); 
             html += '</tbody></table></div>'; 
             resultsDiv.innerHTML = html; 
+        }
+
+        function exportAvisosToXLS() {
+            if (currentAvisosSearchResult.length === 0) {
+                alert("No hay datos para exportar. Por favor, realice una búsqueda primero.");
+                return;
+            }
+
+            const dataToExport = currentAvisosSearchResult.map(aviso => ({
+                'Empleado': aviso.empleado,
+                'Unidad': aviso.unidad,
+                'Fecha Aviso': aviso.fecha,
+                'Estado': aviso.status,
+                'Diagnóstico': aviso.diagnostico || 'N/A',
+                'Encuadre': aviso.encuadra || 'N/A'
+            }));
+
+            const ws = XLSX.utils.json_to_sheet(dataToExport);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "Avisos");
+            const fechaDesde = document.getElementById('search-fecha-aviso-desde').value;
+            const fechaHasta = document.getElementById('search-fecha-aviso-hasta').value;
+            const fileName = `Reporte_Avisos_${fechaDesde}_a_${fechaHasta}.xlsx`;
+            XLSX.writeFile(wb, fileName);
+            logActivity('EXPORT_XLS', `Exportó ${currentAvisosSearchResult.length} avisos a Excel.`);
         }
 
         function listenToActivityLog() {
@@ -1160,7 +1215,7 @@
             document.getElementById('solicitud-fecha').value = today;
             document.getElementById('search-fecha-aviso-desde').value = today;
             document.getElementById('search-fecha-aviso-hasta').value = today;
-            Object.assign(window, { selectRole, goBackToRoleSelection, continueLoginPersonal, goBackToLogin, logout, showView, openUsuarioModal, closeUsuarioModal, precargarDatosUsuario, resetPassword, deleteUser, handleFileUpload, openAvisoModal, closeAvisoModal, precargarDatosAfiliado, deleteAviso, openFormulario, updateAsistencia, filtrarEvaluadosPorFecha, filtrarPresentarse, searchAntecedentes, openChangePasswordModal, closeChangePasswordModal, filterTable, openAvisosFechaModal, closeAvisosFechaModal, searchAvisosPorFecha }); 
+            Object.assign(window, { selectRole, goBackToRoleSelection, continueLoginPersonal, goBackToLogin, logout, showView, openUsuarioModal, closeUsuarioModal, precargarDatosUsuario, resetPassword, deleteUser, handleFileUpload, openAvisoModal, closeAvisoModal, precargarDatosAfiliado, deleteAviso, openFormulario, updateAsistencia, filtrarEvaluadosPorFecha, filtrarPresentarse, searchAntecedentes, openChangePasswordModal, closeChangePasswordModal, filterTable, openAvisosFechaModal, closeAvisosFechaModal, searchAvisosPorFecha, exportAvisosToXLS }); 
         };
     </script>
 </body>
