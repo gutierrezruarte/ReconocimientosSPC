@@ -258,7 +258,7 @@
                         </div>
                         <div class="bg-white p-6 rounded-2xl shadow-lg">
                             <div class="mb-4">
-                                <input type="text" id="search-avisos-visados" onkeyup="filterTable('search-avisos-visados', 'avisos-visados-table', [0, 2])" placeholder="Buscar por Empleado o Unidad..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                                <input type="text" id="search-avisos-visados" onkeyup="filterTable('search-avisos-visados', 'avisos-visados-table', [0, 2, 3])" placeholder="Buscar por Empleado, Unidad o Diagnóstico..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
                             </div>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-sm text-left text-gray-500">
@@ -267,7 +267,8 @@
                                             <th scope="col" class="px-6 py-3">Empleado</th>
                                             <th scope="col" class="px-6 py-3">Fecha Aviso</th>
                                             <th scope="col" class="px-6 py-3">Unidad</th>
-                                            <th scope="col" class="px-6 py-3" id="avisos-visados-actions-header">Acciones</th>
+                                            <th scope="col" class="px-6 py-3">Diagnóstico</th>
+                                            <th scope="col" class="px-6 py-3">Acciones</th>
                                         </tr>
                                     </thead>
                                     <tbody id="avisos-visados-table"></tbody>
@@ -947,38 +948,43 @@
         function listenToAvisos(status) {
             const isPending = status === 'Pendiente';
             const tableId = isPending ? 'avisos-pendientes-table' : 'avisos-visados-table';
-            const headerId = isPending ? 'avisos-pendientes-actions-header' : 'avisos-visados-actions-header';
+            const tableBody = document.getElementById(tableId);
 
             let q = query(collection(db, "avisos"), where("status", "==", status));
             if (selectedRole === 'personal' && currentUserUnidad !== 'TODAS') {
                 q = query(collection(db, "avisos"), where("status", "==", status), where("unidad", "==", currentUserUnidad));
             }
             
-            document.getElementById(headerId).style.display = (selectedRole === 'personal' && !isPending) ? '' : 'table-cell';
-
             const listener = onSnapshot(q, (snapshot) => {
-                const tableBody = document.getElementById(tableId);
                 tableBody.innerHTML = '';
+                const colspan = isPending ? 4 : 5;
                 if (snapshot.empty) {
-                    tableBody.innerHTML = `<tr><td colspan="4" class="text-center p-4">No hay avisos ${status.toLowerCase()}s.</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="${colspan}" class="text-center p-4">No hay avisos ${status.toLowerCase()}s.</td></tr>`;
                     return;
                 }
                 snapshot.forEach((doc) => {
                     const aviso = doc.data();
-                    let actionsHtml = '';
-                    const canEdit = (selectedRole === 'administrador') || (selectedRole === 'personal' && isPending);
-                    const canDelete = selectedRole === 'administrador';
-
-                    if (canEdit || canDelete) {
-                        actionsHtml += '<td class="px-6 py-4 space-x-2 text-right">';
+                    let actionsHtml = '<td class="px-6 py-4 space-x-2 text-right">';
+                    
+                    if (isPending) {
+                        const canEdit = (selectedRole === 'administrador') || (selectedRole === 'personal');
+                        const canDelete = selectedRole === 'administrador';
                         if (canEdit) actionsHtml += `<button onclick="openAvisoModal('${doc.id}')" class="text-blue-600 hover:text-blue-800" title="Editar"><i class="fas fa-edit"></i></button>`;
                         if (canDelete) actionsHtml += `<button onclick="deleteAviso('${doc.id}')" class="text-red-600 hover:text-red-800" title="Eliminar"><i class="fas fa-trash"></i></button>`;
-                        actionsHtml += '</td>';
-                    } else {
-                        actionsHtml = '<td></td>';
+                    } else { // Visados
+                        if (aviso.incidenteId) {
+                            actionsHtml += `<button onclick="openFormulario('${aviso.incidenteId}', 'avisos-visados')" class="text-gray-500 hover:text-blue-600" title="Ver Carta Médica"><i class="fas fa-eye"></i></button>`;
+                        }
+                        if (selectedRole === 'administrador') {
+                            actionsHtml += `<button onclick="openAvisoModal('${doc.id}')" class="text-blue-600 hover:text-blue-800" title="Editar"><i class="fas fa-edit"></i></button>`;
+                            actionsHtml += `<button onclick="deleteAviso('${doc.id}')" class="text-red-600 hover:text-red-800" title="Eliminar"><i class="fas fa-trash"></i></button>`;
+                        }
                     }
+                    actionsHtml += '</td>';
+
+                    const diagnosticoColumn = isPending ? '' : `<td class="px-6 py-4 text-xs">${aviso.diagnostico || 'N/A'}</td>`;
                     
-                    tableBody.innerHTML += `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-6 py-4">${aviso.empleado}</td><td class="px-6 py-4">${aviso.fecha}</td><td class="px-6 py-4">${aviso.unidad}</td>${actionsHtml}</tr>`;
+                    tableBody.innerHTML += `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-6 py-4">${aviso.empleado}</td><td class="px-6 py-4">${aviso.fecha}</td><td class="px-6 py-4">${aviso.unidad}</td>${diagnosticoColumn}${actionsHtml}</tr>`;
                 });
             });
 
@@ -1014,14 +1020,26 @@
             const form = document.getElementById('reconocimiento-form');
             if (isEditable) {
                 const licenciaDesdeInput = form.querySelector('input[name="licenciaDesde"]'), diasInput = form.querySelector('input[name="dias"]'), altaDesdeInput = form.querySelector('input[name="altaDesde"]');
-                function calcularAlta() { if (licenciaDesdeInput.value && diasInput.value) { const startDate = new Date(licenciaDesdeInput.value + 'T00:00:00'), days = parseInt(diasInput.value, 10); if (!isNaN(days) && days > 0) { startDate.setDate(startDate.getDate() + days); altaDesdeInput.value = startDate.toISOString().slice(0, 10); } else { altaDesdeInput.value = ''; } } }
+                function calcularAlta() { if (licenciaDesdeInput.value && diasInput.value) { const startDate = new Date(licenciaDesdeInput.value + 'T00:00:00'), days = parseInt(diasInput.value, 10); if (!isNaN(days) && days > 0) { startDate.setDate(startDate.getDate() + days - 1); altaDesdeInput.value = startDate.toISOString().slice(0, 10); } else { altaDesdeInput.value = ''; } } }
                 licenciaDesdeInput.addEventListener('change', calcularAlta); diasInput.addEventListener('input', calcularAlta);
                 form.addEventListener('submit', async function(e) {
                     e.preventDefault();
                     if (!this.elements.licenciaDesde.value || !this.elements.dias.value || !this.elements.encuadra.value) { alert('Complete los campos de Licencia.'); return; }
                     const incidenteDocRef = doc(db, "incidentes", this.dataset.incidenteId); const avisoDocRef = doc(db, "avisos", this.dataset.avisoId);
                     const updatedData = { motivo: this.elements.motivo_reconocimiento.value, estado: 'Completado', reconocimiento: { observaciones: this.elements.observaciones.value, licenciaDesde: this.elements.licenciaDesde.value, dias: this.elements.dias.value, altaDesde: this.elements.altaDesde.value, encuadra: this.elements.encuadra.value, fechaEvaluacion: new Date().toISOString().slice(0, 10), sintomas: this.elements.sintomas.value, diagnostico: this.elements.diagnostico.value, cumpleTratamiento: this.elements.cumpleTratamiento.value, medicoMatricula: this.elements.medicoMatricula.value, medicoNombre: this.elements.medicoNombre.value } };
-                    try { await updateDoc(incidenteDocRef, updatedData); await updateDoc(avisoDocRef, {status: 'Completado'}); await logActivity(isCompleted ? 'UPDATE_INCIDENTE' : 'COMPLETE_INCIDENTE', `Incidente de ${incidente.empleado}`); alert('Guardado.'); showView('completados'); } catch (error) { console.error(error); }
+                    try {
+                        await updateDoc(incidenteDocRef, updatedData);
+                        await updateDoc(avisoDocRef, {
+                            status: 'Completado',
+                            diagnostico: this.elements.diagnostico.value,
+                            incidenteId: this.dataset.incidenteId
+                        });
+                        await logActivity(isCompleted ? 'UPDATE_INCIDENTE' : 'COMPLETE_INCIDENTE', `Incidente de ${incidente.empleado}`);
+                        alert('Guardado.');
+                        showView('completados');
+                    } catch (error) {
+                        console.error(error);
+                    }
                 });
             }
         }
@@ -1031,7 +1049,43 @@
         // --- BÚSQUEDAS Y FILTROS ---
         async function filtrarEvaluadosPorFecha() { const fecha = document.getElementById('fecha-evaluados').value, tableBody = document.getElementById('evaluados-table'); if (!fecha) { tableBody.innerHTML = '<tr><td colspan="5" class="text-center p-4 text-red-500">Seleccione una fecha.</td></tr>'; return; } const q = query(collection(db, "incidentes"), where("estado", "==", "Completado"), where("reconocimiento.fechaEvaluacion", "==", fecha)); const snapshot = await getDocs(q); tableBody.innerHTML = ''; if (snapshot.empty) { tableBody.innerHTML = '<tr><td colspan="5" class="text-center p-4">No se encontraron evaluados.</td></tr>'; } else { snapshot.forEach(doc => { const inc = doc.data(); tableBody.innerHTML += `<tr class="bg-white border-b"><td class="px-6 py-4">${inc.id}</td><td class="px-6 py-4">${inc.empleado}</td><td class="px-6 py-4">${inc.reconocimiento.fechaEvaluacion}</td><td class="px-6 py-4">${inc.reconocimiento.encuadra}</td><td class="px-6 py-4"><button onclick="openFormulario('${doc.id}', 'evaluados')" class="text-blue-600 hover:underline">Ver</button></td></tr>`; }); } }
         async function searchAntecedentes() { const afiliado = document.getElementById('search-antecedentes-afiliado').value.trim(), matricula = document.getElementById('search-antecedentes-matricula').value.trim(), container = document.getElementById('antecedentes-table-container'); if (!afiliado && !matricula) { container.innerHTML = '<p class="text-center p-4 text-red-500">Ingrese un criterio.</p>'; return; } container.innerHTML = '<p class="text-center p-4">Buscando...</p>'; let conditions = [where("estado", "==", "Completado")]; if (afiliado) conditions.push(where("afiliado", "==", afiliado)); if (matricula) conditions.push(where("reconocimiento.medicoMatricula", "==", matricula)); const q = query(collection(db, "incidentes"), ...conditions), snapshot = await getDocs(q); if (snapshot.empty) { container.innerHTML = '<p class="text-center p-4">No se encontraron antecedentes.</p>'; } else { let html = `<div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-xs text-gray-700 uppercase bg-gray-50"><th class="px-6 py-3">Empleado</th><th class="px-6 py-3">Fecha Ev.</th><th class="px-6 py-3">Diagnóstico</th><th class="px-6 py-3">Médico</th><th class="px-6 py-3">Acción</th></tr></thead><tbody>`; snapshot.forEach(d => { const i = d.data(), r = i.reconocimiento; html += `<tr class="bg-white border-b"><td class="px-6 py-4">${i.empleado} (${i.afiliado})</td><td class="px-6 py-4">${r.fechaEvaluacion}</td><td class="px-6 py-4">${r.diagnostico||'N/A'}</td><td class="px-6 py-4">${r.medicoNombre||'N/A'} (Mat: ${r.medicoMatricula||'N/A'})</td><td class="px-6 py-4"><button onclick="openFormulario('${d.id}', 'antecedentes')" class="text-blue-600 hover:underline">Ver</button></td></tr>`; }); html += `</tbody></table></div>`; container.innerHTML = html; } }
-        async function filtrarPresentarse() { const fecha = document.getElementById('fecha-presentarse').value, unidad = document.getElementById('unidad-presentarse').value, tableBody = document.getElementById('presentarse-table'); if (!fecha) { tableBody.innerHTML = '<tr><td colspan="7" class="text-center p-4 text-red-500">Seleccione una fecha.</td></tr>'; return; } let conditions = [where("reconocimiento.altaDesde", "==", fecha)]; if (unidad !== 'TODAS') conditions.push(where("unidad", "==", unidad)); const q = query(collection(db, "incidentes"), ...conditions), snapshot = await getDocs(q); tableBody.innerHTML = ''; if (snapshot.empty) { tableBody.innerHTML = '<tr><td colspan="7" class="text-center p-4">No hay personal a presentarse.</td></tr>'; } else { snapshot.forEach(doc => { const inc = doc.data(); const altaDate = new Date(inc.reconocimiento.altaDesde + 'T00:00:00'); altaDate.setDate(altaDate.getDate() - 1); const isEditable = selectedRole === 'personal' && currentUserUnidad !== 'TODAS' && inc.unidad === currentUserUnidad; const presento = isEditable ? `<input type="checkbox" onchange="updateAsistencia('${doc.id}','sePresento',this.checked)" ${inc.asistencia?.sePresento?'checked':''}>` : (inc.asistencia?.sePresento ? 'Sí' : 'No'); const comunico = isEditable ? `<input type="checkbox" onchange="updateAsistencia('${doc.id}','seComunico',this.checked)" ${inc.asistencia?.seComunico?'checked':''}>` : (inc.asistencia?.seComunico ? 'Sí' : 'No'); const obs = isEditable ? `<textarea oninput="updateAsistencia('${doc.id}','observaciones',this.value)" class="w-full border p-1">${inc.asistencia?.observaciones||''}</textarea>` : `<p>${inc.asistencia?.observaciones||''}</p>`; tableBody.innerHTML += `<tr class="bg-white border-b"><td class="px-6 py-4">${inc.empleado}</td><td class="px-6 py-4">${inc.unidad}</td><td class="px-6 py-4">${altaDate.toISOString().slice(0,10)}</td><td class="px-6 py-4">${inc.reconocimiento.altaDesde}</td><td class="px-6 py-4">${presento}</td><td class="px-6 py-4">${comunico}</td><td class="px-6 py-4">${obs}</td></tr>`; }); } }
+        async function filtrarPresentarse() {
+            const fecha = document.getElementById('fecha-presentarse').value,
+                unidad = document.getElementById('unidad-presentarse').value,
+                tableBody = document.getElementById('presentarse-table');
+            if (!fecha) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center p-4 text-red-500">Seleccione una fecha.</td></tr>';
+                return;
+            }
+
+            const fechaPresentarse = new Date(fecha + 'T00:00:00');
+            fechaPresentarse.setDate(fechaPresentarse.getDate() - 1);
+            const fechaAltaQuery = fechaPresentarse.toISOString().slice(0, 10);
+
+            let conditions = [where("reconocimiento.altaDesde", "==", fechaAltaQuery)];
+            if (unidad !== 'TODAS') {
+                conditions.push(where("unidad", "==", unidad));
+            }
+
+            const q = query(collection(db, "incidentes"), ...conditions),
+                snapshot = await getDocs(q);
+            tableBody.innerHTML = '';
+            if (snapshot.empty) {
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center p-4">No hay personal a presentarse en esta fecha.</td></tr>';
+            } else {
+                snapshot.forEach(doc => {
+                    const inc = doc.data();
+                    const finLicencia = inc.reconocimiento.altaDesde;
+                    const debePresentarse = fecha;
+
+                    const isEditable = selectedRole === 'personal' && currentUserUnidad !== 'TODAS' && inc.unidad === currentUserUnidad;
+                    const presento = isEditable ? `<input type="checkbox" onchange="updateAsistencia('${doc.id}','sePresento',this.checked)" ${inc.asistencia?.sePresento ? 'checked' : ''}>` : (inc.asistencia?.sePresento ? 'Sí' : 'No');
+                    const comunico = isEditable ? `<input type="checkbox" onchange="updateAsistencia('${doc.id}','seComunico',this.checked)" ${inc.asistencia?.seComunico ? 'checked' : ''}>` : (inc.asistencia?.seComunico ? 'Sí' : 'No');
+                    const obs = isEditable ? `<textarea oninput="updateAsistencia('${doc.id}','observaciones',this.value)" class="w-full border p-1">${inc.asistencia?.observaciones || ''}</textarea>` : `<p>${inc.asistencia?.observaciones || ''}</p>`;
+                    tableBody.innerHTML += `<tr class="bg-white border-b"><td class="px-6 py-4">${inc.empleado}</td><td class="px-6 py-4">${inc.unidad}</td><td class="px-6 py-4">${finLicencia}</td><td class="px-6 py-4">${debePresentarse}</td><td class="px-6 py-4">${presento}</td><td class="px-6 py-4">${comunico}</td><td class="px-6 py-4">${obs}</td></tr>`;
+                });
+            }
+        }
         
         function openAvisosFechaModal() { document.getElementById('avisos-fecha-modal').classList.add('flex'); document.getElementById('avisos-fecha-modal').classList.remove('hidden'); }
         function closeAvisosFechaModal() { document.getElementById('avisos-fecha-modal').classList.add('hidden'); document.getElementById('avisos-fecha-modal').classList.remove('flex'); }
