@@ -220,7 +220,7 @@
                             <div class="flex items-center space-x-2">
                                 <button onclick="openAvisosFechaModal()" class="bg-teal-500 text-white py-2 px-5 rounded-lg hover:bg-teal-600 transition duration-300 flex items-center space-x-2">
                                     <i class="fas fa-calendar-day"></i>
-                                    <span>Avisos por Fecha</span>
+                                    <span>Avisos por Período</span>
                                 </button>
                                 <button id="nuevo-aviso-btn" onclick="openAvisoModal()" class="bg-blue-600 text-white py-2 px-5 rounded-lg hover:bg-blue-700 transition duration-300 flex items-center space-x-2">
                                     <i class="fas fa-plus"></i>
@@ -253,7 +253,7 @@
                             <h2 class="text-3xl font-bold text-gray-700">Avisos de Carpetas Visados</h2>
                              <button onclick="openAvisosFechaModal()" class="bg-teal-500 text-white py-2 px-5 rounded-lg hover:bg-teal-600 transition duration-300 flex items-center space-x-2">
                                 <i class="fas fa-calendar-day"></i>
-                                <span>Avisos por Fecha</span>
+                                <span>Avisos por Período</span>
                             </button>
                         </div>
                         <div class="bg-white p-6 rounded-2xl shadow-lg">
@@ -544,16 +544,20 @@
     
      <div id="avisos-fecha-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 no-print z-50">
         <div class="bg-white rounded-2xl shadow-xl w-full max-w-4xl p-8 max-h-[95vh] flex flex-col">
-             <h2 class="text-2xl font-bold mb-6">Buscar Avisos por Fecha</h2>
-             <div class="flex items-end space-x-4 mb-4">
-                 <div class="flex-grow">
-                     <label for="search-fecha-aviso" class="block mb-2 text-sm font-medium text-gray-900">Seleccione una Fecha</label>
-                     <input type="date" id="search-fecha-aviso" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+             <h2 class="text-2xl font-bold mb-6">Buscar Avisos por Período</h2>
+             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end mb-4">
+                 <div>
+                     <label for="search-fecha-aviso-desde" class="block mb-2 text-sm font-medium text-gray-900">Fecha Desde</label>
+                     <input type="date" id="search-fecha-aviso-desde" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                  </div>
+                 <div>
+                    <label for="search-fecha-aviso-hasta" class="block mb-2 text-sm font-medium text-gray-900">Fecha Hasta</label>
+                    <input type="date" id="search-fecha-aviso-hasta" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                </div>
                  <button onclick="searchAvisosPorFecha()" class="bg-blue-600 text-white py-2.5 px-6 rounded-lg hover:bg-blue-700 transition">Buscar</button>
              </div>
              <div id="avisos-fecha-results" class="flex-grow overflow-y-auto border-t pt-4">
-                <p class="text-center text-gray-500">Seleccione una fecha para ver los avisos.</p>
+                <p class="text-center text-gray-500">Seleccione un período de fechas para ver los avisos.</p>
              </div>
              <div class="flex justify-end mt-6">
                  <button type="button" onclick="closeAvisosFechaModal()" class="py-2 px-6 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition">Cerrar</button>
@@ -992,7 +996,7 @@
                         if (canDelete) actionsHtml += `<button onclick="deleteAviso('${doc.id}')" class="text-red-600 hover:text-red-800" title="Eliminar"><i class="fas fa-trash"></i></button>`;
                     } else { // Visados
                         if (aviso.incidenteId) {
-                            actionsHtml += `<button onclick="openFormulario('${aviso.incidenteId}', 'avisos-visados')" class="text-gray-500 hover:text-blue-600" title="Ver Carta Médica"><i class="fas fa-eye"></i></button>`;
+                            actionsHtml += `<button onclick="openFormulario('${aviso.incidenteId}', 'avisos-visados', true)" class="text-gray-500 hover:text-blue-600" title="Ver Carta Médica"><i class="fas fa-eye"></i></button>`;
                         }
                         if (selectedRole === 'administrador') {
                             actionsHtml += `<button onclick="openAvisoModal('${doc.id}')" class="text-blue-600 hover:text-blue-800" title="Editar"><i class="fas fa-edit"></i></button>`;
@@ -1031,9 +1035,11 @@
             if (isPending) unsubscribePendientes = listener; else unsubscribeCompletados = listener;
         }
         
-        async function openFormulario(incidenteId, originView) {
+        async function openFormulario(incidenteId, originView, isReadOnly = false) {
             const docRef = doc(db, "incidentes", incidenteId); const docSnap = await getDoc(docRef); if (!docSnap.exists()) { alert("Incidente no encontrado."); return; }
-            const incidente = docSnap.data(); const formContainer = document.getElementById('form-view'); const isEditable = selectedRole === 'reconocimientos' || selectedRole === 'administrador'; const isCompleted = incidente.estado === 'Completado';
+            const incidente = docSnap.data(); const formContainer = document.getElementById('form-view'); 
+            const isEditable = (selectedRole === 'reconocimientos' || selectedRole === 'administrador') && !isReadOnly;
+            const isCompleted = incidente.estado === 'Completado';
             formContainer.innerHTML = `<div class="flex justify-end mb-4 space-x-2 no-print"><button onclick="window.print()" class="bg-gray-500 text-white py-2 px-4 rounded-lg hover:bg-gray-600"><i class="fas fa-print mr-2"></i>Imprimir</button><button onclick="showView('${originView}')" class="bg-gray-300 text-gray-800 py-2 px-4 rounded-lg hover:bg-gray-400">Volver</button></div><div id="printable-form" class="bg-white p-6 border border-gray-400"><form id="reconocimiento-form" data-incidente-id="${incidenteId}" data-aviso-id="${incidente.avisoId}"><div class="flex items-center justify-between mb-2"><img src="https://raw.githubusercontent.com/gutierrezruarte/BibliotecaSPC/main/Escudo-1-279x300-removebg-preview.png" alt="Escudo" class="w-16 h-auto"><div class="text-center"><h2 class="font-bold text-base">CARTA MÉDICA</h2><p class="text-xs">SERVICIO PENITENCIARIO DE CÓRDOBA</p></div><div class="w-16"></div></div><div class="border-2 border-black p-2 mb-2"><h3 class="font-bold text-center text-sm mb-2 bg-gray-200 p-1">DIVISIÓN PERSONAL</h3><div class="grid grid-cols-3 gap-x-4 gap-y-1 text-xs"><div><span class="font-semibold">UNIDAD:</span> ${incidente.unidad}</div><div><span class="font-semibold">TIPO:</span> ${incidente.solicitudTipo}</div><div><span class="font-semibold">APELLIDO Y NOMBRES:</span> ${incidente.empleado}</div><div><span class="font-semibold">AFILIADO N°:</span> ${incidente.afiliado}</div><div><span class="font-semibold">GRADO:</span> ${incidente.grado}</div><div><span class="font-semibold">DIRECCIÓN:</span> ${incidente.direccion}</div><div class="col-span-3 mt-2 flex items-center space-x-4 border-t pt-1">${isEditable ? `<label class="flex items-center"><input type="radio" name="motivo_reconocimiento" value="ENFERMEDAD DEL AGENTE" ${incidente.motivo==='ENFERMEDAD DEL AGENTE'?'checked':''}>ENF. AGENTE</label><label class="flex items-center"><input type="radio" name="motivo_reconocimiento" value="ENFERMEDAD DE PARIENTE" ${incidente.motivo==='ENFERMEDAD DE PARIENTE'?'checked':''}>ENF. PARIENTE</label>`:`<p>${incidente.motivo}</p>`}</div><div><span class="font-semibold">SOLICITUD:</span> ${incidente.solicitudFecha}, ${incidente.solicitudHora}</div></div></div><div class="border-2 border-black p-2"><h3 class="font-bold text-center text-sm mb-2 bg-gray-200 p-1">DEPARTAMENTO RECONOCIMIENTO MÉDICO</h3><div class="grid grid-cols-1 gap-y-2 text-xs"><div class="col-span-2"><label class="font-semibold">SÍNTOMAS Y SIGNOS:</label><textarea name="sintomas" ${!isEditable?'readonly':''} class="w-full border p-1 mt-1 h-12 bg-gray-50 text-xs">${incidente.reconocimiento?.sintomas || ''}</textarea></div><div class="col-span-2"><label class="font-semibold">DIAGNÓSTICO:</label><textarea name="diagnostico" ${!isEditable?'readonly':''} class="w-full border p-1 mt-1 h-12 bg-gray-50 text-xs">${incidente.reconocimiento?.diagnostico || ''}</textarea></div><div class="flex items-center space-x-4"><span class="font-semibold">Cumple tratamiento:</span><label><input type="radio" name="cumpleTratamiento" value="SI" ${!isEditable?'disabled':''} ${incidente.reconocimiento?.cumpleTratamiento === 'SI'?'checked':''}>SI</label><label><input type="radio" name="cumpleTratamiento" value="NO" ${!isEditable?'disabled':''} ${incidente.reconocimiento?.cumpleTratamiento === 'NO'?'checked':''}>NO</label></div><div class="border-t pt-2 mt-2"><p class="font-bold text-center text-sm mb-1">MÉDICO TRATANTE</p><div class="grid grid-cols-2 gap-2"><div><label class="font-semibold">MATRÍCULA:</label><input type="text" name="medicoMatricula" value="${incidente.reconocimiento?.medicoMatricula || ''}" ${!isEditable?'readonly':''} class="w-full border p-1 mt-1 bg-gray-50 text-xs"></div><div><label class="font-semibold">NOMBRE Y APELLIDO:</label><input type="text" name="medicoNombre" value="${incidente.reconocimiento?.medicoNombre || ''}" ${!isEditable?'readonly':''} class="w-full border p-1 mt-1 bg-gray-50 text-xs"></div></div></div><div class="border-t pt-2 mt-2"><p class="font-bold text-center text-sm mb-1">LICENCIA OTORGADA</p><div class="grid grid-cols-4 gap-2 items-end"><div><label class="font-semibold">DESDE:</label><input type="date" name="licenciaDesde" value="${incidente.reconocimiento?.licenciaDesde || ''}" ${!isEditable?'readonly':''} class="w-full border p-1 mt-1 bg-gray-50 text-xs" required></div><div><label class="font-semibold">DÍAS:</label><input type="number" name="dias" value="${incidente.reconocimiento?.dias || ''}" ${!isEditable?'readonly':''} class="w-full border p-1 mt-1 bg-gray-50 text-xs" required></div><div><label class="font-semibold">ALTA:</label><input type="date" name="altaDesde" value="${incidente.reconocimiento?.altaDesde || ''}" readonly class="w-full border p-1 mt-1 bg-gray-200 text-xs"></div><div><label class="font-semibold">ENCUADRA:</label><select name="encuadra" ${!isEditable?'disabled':''} class="w-full border p-1 mt-1 bg-gray-50 text-xs" required><option value="" disabled selected>-- Sel --</option><option value="ART. 14" ${incidente.reconocimiento?.encuadra==='ART. 14'?'selected':''}>ART. 14</option><option value="ART. 19" ${incidente.reconocimiento?.encuadra==='ART. 19'?'selected':''}>ART. 19</option><option value="ART. 20" ${incidente.reconocimiento?.encuadra==='ART. 20'?'selected':''}>ART. 20</option><option value="ART. 29" ${incidente.reconocimiento?.encuadra==='ART. 29'?'selected':''}>ART. 29</option><option value="ART. 30" ${incidente.reconocimiento?.encuadra==='ART. 30'?'selected':''}>ART. 30</option><option value="ART. 30 BIS" ${incidente.reconocimiento?.encuadra==='ART. 30 BIS'?'selected':''}>ART. 30 BIS</option><option value="SIN JUSTIFICAR" ${incidente.reconocimiento?.encuadra==='SIN JUSTIFICAR'?'selected':''}>SIN JUSTIFICAR</option></select></div></div></div><div class="mt-2"><label class="font-semibold">OBSERVACIONES:</label><textarea name="observaciones" ${!isEditable ? 'readonly' : ''} class="w-full border p-1 mt-1 h-12 bg-gray-50 text-xs">${incidente.reconocimiento?.observaciones || ''}</textarea></div></div>${isEditable ? `<div class="flex justify-end mt-4 no-print"><button type="submit" class="bg-green-600 text-white py-2 px-6 rounded-lg hover:bg-green-700">${isCompleted ? 'Guardar Cambios' : 'Completar'}</button></div>` : ''}</div></form></div>`;
             showView('form');
             const form = document.getElementById('reconocimiento-form');
@@ -1109,7 +1115,34 @@
         
         function openAvisosFechaModal() { document.getElementById('avisos-fecha-modal').classList.add('flex'); document.getElementById('avisos-fecha-modal').classList.remove('hidden'); }
         function closeAvisosFechaModal() { document.getElementById('avisos-fecha-modal').classList.add('hidden'); document.getElementById('avisos-fecha-modal').classList.remove('flex'); }
-        async function searchAvisosPorFecha() { const fecha = document.getElementById('search-fecha-aviso').value; const resultsDiv = document.getElementById('avisos-fecha-results'); if (!fecha) { resultsDiv.innerHTML = '<p class="text-center text-red-500">Por favor, seleccione una fecha.</p>'; return; } resultsDiv.innerHTML = '<p class="text-center">Buscando...</p>'; const q = query(collection(db, "avisos"), where("fecha", "==", fecha)); const snapshot = await getDocs(q); if (snapshot.empty) { resultsDiv.innerHTML = '<p class="text-center">No se encontraron avisos para esta fecha.</p>'; return; } let html = '<div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-xs text-gray-700 uppercase bg-gray-50"><th class="px-4 py-2">Empleado</th><th class="px-4 py-2">Unidad</th><th class="px-4 py-2">Estado</th></tr></thead><tbody>'; snapshot.forEach(doc => { const aviso = doc.data(); const statusClass = aviso.status === 'Completado' ? 'text-green-600' : 'text-yellow-600'; html += `<tr class="bg-white border-b"><td class="px-4 py-2">${aviso.empleado}</td><td class="px-4 py-2">${aviso.unidad}</td><td class="px-4 py-2 font-semibold ${statusClass}">${aviso.status}</td></tr>`; }); html += '</tbody></table></div>'; resultsDiv.innerHTML = html; }
+        async function searchAvisosPorFecha() { 
+            const fechaDesde = document.getElementById('search-fecha-aviso-desde').value;
+            const fechaHasta = document.getElementById('search-fecha-aviso-hasta').value;
+            const resultsDiv = document.getElementById('avisos-fecha-results');
+            if (!fechaDesde || !fechaHasta) {
+                resultsDiv.innerHTML = '<p class="text-center text-red-500">Por favor, seleccione un período de fechas completo.</p>';
+                return;
+            }
+             if (fechaDesde > fechaHasta) {
+                resultsDiv.innerHTML = '<p class="text-center text-red-500">La fecha "Desde" no puede ser posterior a la fecha "Hasta".</p>';
+                return;
+            }
+            resultsDiv.innerHTML = '<p class="text-center">Buscando...</p>';
+            const q = query(collection(db, "avisos"), where("fecha", ">=", fechaDesde), where("fecha", "<=", fechaHasta));
+            const snapshot = await getDocs(q); 
+            if (snapshot.empty) { 
+                resultsDiv.innerHTML = '<p class="text-center">No se encontraron avisos para este período.</p>'; 
+                return; 
+            } 
+            let html = '<div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-xs text-gray-700 uppercase bg-gray-50"><th class="px-4 py-2">Empleado</th><th class="px-4 py-2">Unidad</th><th class="px-4 py-2">Fecha</th><th class="px-4 py-2">Estado</th></tr></thead><tbody>'; 
+            snapshot.forEach(doc => { 
+                const aviso = doc.data(); 
+                const statusClass = aviso.status === 'Completado' ? 'text-green-600' : 'text-yellow-600'; 
+                html += `<tr class="bg-white border-b"><td class="px-4 py-2">${aviso.empleado}</td><td class="px-4 py-2">${aviso.unidad}</td><td class="px-4 py-2">${aviso.fecha}</td><td class="px-4 py-2 font-semibold ${statusClass}">${aviso.status}</td></tr>`; 
+            }); 
+            html += '</tbody></table></div>'; 
+            resultsDiv.innerHTML = html; 
+        }
 
         function listenToActivityLog() {
             const q = query(collection(db, "activityLog"), orderBy("timestamp", "desc"));
@@ -1122,7 +1155,13 @@
         
         function filterTable(inputId, tableId, columnsToSearch) { const input = document.getElementById(inputId), filter = input.value.toUpperCase(), table = document.getElementById(tableId), tr = table.getElementsByTagName("tr"); for (let i = 0; i < tr.length; i++) { let found = false; const tds = tr[i].getElementsByTagName("td"); if (tds.length > 0) { for (const colIndex of columnsToSearch) { if(tds[colIndex]) { if ((tds[colIndex].textContent || tds[colIndex].innerText).toUpperCase().indexOf(filter) > -1) { found = true; break; } } } tr[i].style.display = found ? "" : "none"; } } }
         
-        window.onload = () => { document.getElementById('solicitud-fecha').value = new Date().toISOString().slice(0, 10); document.getElementById('search-fecha-aviso').value = new Date().toISOString().slice(0, 10); Object.assign(window, { selectRole, goBackToRoleSelection, continueLoginPersonal, goBackToLogin, logout, showView, openUsuarioModal, closeUsuarioModal, precargarDatosUsuario, resetPassword, deleteUser, handleFileUpload, openAvisoModal, closeAvisoModal, precargarDatosAfiliado, deleteAviso, openFormulario, updateAsistencia, filtrarEvaluadosPorFecha, filtrarPresentarse, searchAntecedentes, openChangePasswordModal, closeChangePasswordModal, filterTable, openAvisosFechaModal, closeAvisosFechaModal, searchAvisosPorFecha }); };
+        window.onload = () => { 
+            const today = new Date().toISOString().slice(0, 10);
+            document.getElementById('solicitud-fecha').value = today;
+            document.getElementById('search-fecha-aviso-desde').value = today;
+            document.getElementById('search-fecha-aviso-hasta').value = today;
+            Object.assign(window, { selectRole, goBackToRoleSelection, continueLoginPersonal, goBackToLogin, logout, showView, openUsuarioModal, closeUsuarioModal, precargarDatosUsuario, resetPassword, deleteUser, handleFileUpload, openAvisoModal, closeAvisoModal, precargarDatosAfiliado, deleteAviso, openFormulario, updateAsistencia, filtrarEvaluadosPorFecha, filtrarPresentarse, searchAntecedentes, openChangePasswordModal, closeChangePasswordModal, filterTable, openAvisosFechaModal, closeAvisosFechaModal, searchAvisosPorFecha }); 
+        };
     </script>
 </body>
 </html>
