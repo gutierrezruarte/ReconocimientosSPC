@@ -257,8 +257,18 @@
                             </button>
                         </div>
                         <div class="bg-white p-6 rounded-2xl shadow-lg">
-                            <div class="mb-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                                 <input type="text" id="search-avisos-visados" onkeyup="filterTable('search-avisos-visados', 'avisos-visados-table', [0, 2, 3])" placeholder="Buscar por Empleado, Unidad o Diagnóstico..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                                <select id="filtro-encuadra" onchange="showView('avisos-visados')" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                                    <option value="TODOS">Filtrar por Encuadre (Todos)</option>
+                                    <option value="ART. 14">ART. 14</option>
+                                    <option value="ART. 19">ART. 19</option>
+                                    <option value="ART. 20">ART. 20</option>
+                                    <option value="ART. 29">ART. 29</option>
+                                    <option value="ART. 30">ART. 30</option>
+                                    <option value="ART. 30 BIS">ART. 30 BIS</option>
+                                    <option value="SIN JUSTIFICAR">SIN JUSTIFICAR</option>
+                                </select>
                             </div>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-sm text-left text-gray-500">
@@ -950,16 +960,25 @@
             const tableId = isPending ? 'avisos-pendientes-table' : 'avisos-visados-table';
             const tableBody = document.getElementById(tableId);
 
-            let q = query(collection(db, "avisos"), where("status", "==", status));
+            let baseConditions = [where("status", "==", status)];
             if (selectedRole === 'personal' && currentUserUnidad !== 'TODAS') {
-                q = query(collection(db, "avisos"), where("status", "==", status), where("unidad", "==", currentUserUnidad));
+                baseConditions.push(where("unidad", "==", currentUserUnidad));
             }
             
+            if (status === 'Completado') {
+                const encuadraFiltro = document.getElementById('filtro-encuadra').value;
+                if (encuadraFiltro && encuadraFiltro !== 'TODOS') {
+                    baseConditions.push(where("encuadra", "==", encuadraFiltro));
+                }
+            }
+            
+            const q = query(collection(db, "avisos"), ...baseConditions);
+
             const listener = onSnapshot(q, (snapshot) => {
                 tableBody.innerHTML = '';
                 const colspan = isPending ? 4 : 5;
                 if (snapshot.empty) {
-                    tableBody.innerHTML = `<tr><td colspan="${colspan}" class="text-center p-4">No hay avisos ${status.toLowerCase()}s.</td></tr>`;
+                    tableBody.innerHTML = `<tr><td colspan="${colspan}" class="text-center p-4">No hay avisos que coincidan con los filtros.</td></tr>`;
                     return;
                 }
                 snapshot.forEach((doc) => {
@@ -1032,7 +1051,8 @@
                         await updateDoc(avisoDocRef, {
                             status: 'Completado',
                             diagnostico: this.elements.diagnostico.value,
-                            incidenteId: this.dataset.incidenteId
+                            incidenteId: this.dataset.incidenteId,
+                            encuadra: this.elements.encuadra.value
                         });
                         await logActivity(isCompleted ? 'UPDATE_INCIDENTE' : 'COMPLETE_INCIDENTE', `Incidente de ${incidente.empleado}`);
                         alert('Guardado.');
