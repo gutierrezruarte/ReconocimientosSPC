@@ -208,7 +208,7 @@
                         <h2 class="text-3xl font-bold mb-4 text-gray-700">Importar Personal desde Excel</h2>
                         <div class="bg-white p-6 rounded-2xl shadow-lg">
                             <p class="mb-4 text-gray-600">Seleccione un archivo Excel (.xlsx, .xls) con los datos del personal. La primera fila debe contener los encabezados de las columnas.</p>
-                            <p class="mb-4 text-sm text-gray-500">Columnas requeridas: <strong>Matricula, Apellido y Nombre, Jerarquia, Dom_actua</strong>.</p>
+                            <p class="mb-4 text-sm text-gray-500">Columnas requeridas: <strong>Matricula, Apellido y Nombre, Jerarquia, Dom_actua, Funcion</strong>.</p>
                             <div class="flex items-center space-x-4">
                                 <input type="file" id="excel-file-input" accept=".xlsx, .xls" class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none">
                                 <button onclick="handleFileUpload()" class="bg-green-600 text-white py-2 px-5 rounded-lg hover:bg-green-700 transition duration-300 flex-shrink-0">
@@ -505,13 +505,17 @@
                 <input type="hidden" id="aviso-id">
                 <input type="hidden" id="incidente-id">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                    <div>
+                    <div class="md:col-span-2">
                         <label for="empleado-afiliado" class="block mb-2 text-sm font-medium text-gray-900">Número de Afiliado (Matrícula)</label>
                         <input type="text" id="empleado-afiliado" onblur="precargarDatosAfiliado()" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Buscar por Matrícula" required>
                     </div>
                      <div>
                         <label for="empleado-grado" class="block mb-2 text-sm font-medium text-gray-900">Grado (Jerarquía)</label>
                         <input type="text" id="empleado-grado" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Ej: Sargento" required>
+                    </div>
+                     <div>
+                        <label for="empleado-funcion" class="block mb-2 text-sm font-medium text-gray-900">Función</label>
+                        <input type="text" id="empleado-funcion" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Función del agente" required>
                     </div>
                     <div class="md:col-span-2">
                         <label for="empleado-nombre" class="block mb-2 text-sm font-medium text-gray-900">Apellido y Nombres</label>
@@ -531,7 +535,7 @@
                     </div>
                      <div>
                         <label for="empleado-unidad" class="block mb-2 text-sm font-medium text-gray-900">Unidad</label>
-                        <input type="text" id="empleado-unidad" class="bg-gray-200 border border-gray-300 text-gray-900 text-sm rounded-lg block w-full p-2.5" readonly>
+                        <select id="empleado-unidad" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required></select>
                     </div>
                     <div>
                         <label for="solicitud-tipo" class="block mb-2 text-sm font-medium text-gray-900">Tipo</label>
@@ -544,8 +548,8 @@
                         <label for="solicitud-motivo" class="block mb-2 text-sm font-medium text-gray-900">Motivo de la Solicitud</label>
                         <select id="solicitud-motivo" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" required>
                            <option value="" disabled selected>-- Seleccione un motivo --</option>
-                           <option>ENFERMEDAD DEL AGENTE</option>
-                           <option>ENFERMEDAD DE PARIENTE</option>
+                           <option value="ENFERMEDAD DEL AGENTE">ENFERMEDAD DEL AGENTE</option>
+                           <option value="PERSONA A CARGO / FAMILIAR">PERSONA A CARGO / FAMILIAR</option>
                         </select>
                     </div>
                     <div class="md:col-span-2">
@@ -575,7 +579,7 @@
                 </div>
                 <div>
                     <label for="search-encuadra-aviso" class="block mb-2 text-sm font-medium text-gray-900">Encuadre</label>
-                    <select id="search-encuadra-aviso" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                    <select id="search-encuadra-aviso" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
                         <option value="TODOS">Todos</option>
                         <option value="ART. 14">ART. 14</option>
                         <option value="ART. 19">ART. 19</option>
@@ -1026,8 +1030,52 @@
         document.getElementById('change-password-form').addEventListener('submit', async function(e) { e.preventDefault(); const currentPass = document.getElementById('current-password').value, newPass = document.getElementById('new-password').value, confirmPass = document.getElementById('confirm-password').value, errorP = document.getElementById('password-error'); errorP.classList.add('hidden'); if (newPass !== confirmPass) { errorP.textContent = 'Las contraseñas no coinciden.'; errorP.classList.remove('hidden'); return; } const userDocRef = doc(db, "users", currentUser.afiliado), userDocSnap = await getDoc(userDocRef); if (userDocSnap.exists() && userDocSnap.data().password === currentPass) { await updateDoc(userDocRef, { password: newPass }); await logActivity('CHANGE_PASSWORD', 'Usuario cambió su propia contraseña.'); alert('Contraseña actualizada.'); closeChangePasswordModal(); } else { errorP.textContent = 'Contraseña actual incorrecta.'; errorP.classList.remove('hidden'); } });
         
         // --- IMPORTACIÓN Y AVISOS ---
-        async function handleFileUpload() { const fileInput = document.getElementById('excel-file-input'), statusDiv = document.getElementById('import-status'); if (fileInput.files.length === 0) { statusDiv.innerHTML = `<p class="text-red-500">Seleccione un archivo.</p>`; return; } const file = fileInput.files[0], reader = new FileReader(); statusDiv.innerHTML = `<p class="text-blue-500">Procesando...</p>`; reader.onload = async function(e) { try { const data = new Uint8Array(e.target.result), workbook = XLSX.read(data, {type: 'array'}), ws = workbook.Sheets[workbook.SheetNames[0]], json_data = XLSX.utils.sheet_to_json(ws, {header: 1}); if (json_data.length < 2) throw new Error("Excel vacío."); const headers = json_data[0].map(h => String(h).trim()); if (['Matricula', 'Apellido y Nombre'].some(rh => !headers.includes(rh))) throw new Error(`Faltan columnas requeridas.`); const batch = writeBatch(db), personalData = json_data.slice(1); personalData.forEach(row => { const matricula = String(row[headers.indexOf('Matricula')]).trim(); if (matricula) { const record = { afiliado: matricula, nombreCompleto: row[headers.indexOf('Apellido y Nombre')], grado: row[headers.indexOf('Jerarquia')], direccion: row[headers.indexOf('Dom_actua')] }; batch.set(doc(db, "personal", matricula), record); } }); await batch.commit(); await logActivity('IMPORT_PERSONNEL', `Importó ${personalData.length} registros.`); statusDiv.innerHTML = `<p class="text-green-500">Éxito: ${personalData.length} registros cargados.</p>`; } catch (error) { statusDiv.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`; } }; reader.readAsArrayBuffer(file); }
-        async function precargarDatosAfiliado() { const afiliadoNumero = document.getElementById('empleado-afiliado').value.trim(); if (!afiliadoNumero) return; const docSnap = await getDoc(doc(db, "personal", afiliadoNumero)); if (docSnap.exists()) { const e = docSnap.data(); document.getElementById('empleado-nombre').value = e.nombreCompleto || ''; document.getElementById('empleado-grado').value = e.grado || ''; document.getElementById('empleado-direccion').value = e.direccion || ''; } }
+        async function handleFileUpload() { 
+            const fileInput = document.getElementById('excel-file-input'), statusDiv = document.getElementById('import-status'); 
+            if (fileInput.files.length === 0) { statusDiv.innerHTML = `<p class="text-red-500">Seleccione un archivo.</p>`; return; } 
+            const file = fileInput.files[0], reader = new FileReader(); 
+            statusDiv.innerHTML = `<p class="text-blue-500">Procesando...</p>`; 
+            reader.onload = async function(e) { 
+                try { 
+                    const data = new Uint8Array(e.target.result), workbook = XLSX.read(data, {type: 'array'}), ws = workbook.Sheets[workbook.SheetNames[0]], json_data = XLSX.utils.sheet_to_json(ws, {header: 1}); 
+                    if (json_data.length < 2) throw new Error("Excel vacío."); 
+                    const headers = json_data[0].map(h => String(h).trim()); 
+                    if (['Matricula', 'Apellido y Nombre', 'Funcion'].some(rh => !headers.includes(rh))) throw new Error(`Faltan columnas requeridas (Matricula, Apellido y Nombre, Funcion).`); 
+                    const batch = writeBatch(db), personalData = json_data.slice(1); 
+                    personalData.forEach(row => { 
+                        const matricula = String(row[headers.indexOf('Matricula')]).trim(); 
+                        if (matricula) { 
+                            const record = { 
+                                afiliado: matricula, 
+                                nombreCompleto: row[headers.indexOf('Apellido y Nombre')], 
+                                grado: row[headers.indexOf('Jerarquia')], 
+                                direccion: row[headers.indexOf('Dom_actua')],
+                                funcion: row[headers.indexOf('Funcion')] || ''
+                            }; 
+                            batch.set(doc(db, "personal", matricula), record); 
+                        } 
+                    }); 
+                    await batch.commit(); 
+                    await logActivity('IMPORT_PERSONNEL', `Importó ${personalData.length} registros.`); 
+                    statusDiv.innerHTML = `<p class="text-green-500">Éxito: ${personalData.length} registros cargados.</p>`; 
+                } catch (error) { 
+                    statusDiv.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`; 
+                } 
+            }; 
+            reader.readAsArrayBuffer(file); 
+        }
+        async function precargarDatosAfiliado() { 
+            const afiliadoNumero = document.getElementById('empleado-afiliado').value.trim(); 
+            if (!afiliadoNumero) return; 
+            const docSnap = await getDoc(doc(db, "personal", afiliadoNumero)); 
+            if (docSnap.exists()) { 
+                const e = docSnap.data(); 
+                document.getElementById('empleado-nombre').value = e.nombreCompleto || ''; 
+                document.getElementById('empleado-grado').value = e.grado || ''; 
+                document.getElementById('empleado-direccion').value = e.direccion || ''; 
+                document.getElementById('empleado-funcion').value = e.funcion || '';
+            } 
+        }
         
         function listenToAvisos(status) {
             const isPending = status === 'Pendiente';
@@ -1085,11 +1133,71 @@
         }
         
         async function openAvisoModal(avisoId = null) {
-            const form = document.getElementById('aviso-form'); form.reset(); const mode = avisoId ? 'edit' : 'create'; document.getElementById('aviso-modal-title').textContent = mode === 'create' ? 'Agregar Aviso' : 'Editar Aviso'; document.getElementById('aviso-mode').value = mode; document.getElementById('aviso-id').value = avisoId || ''; document.getElementById('incidente-id').value = ''; if (mode === 'edit') { const q = query(collection(db, "incidentes"), where("avisoId", "==", avisoId)); const snap = await getDocs(q); if (!snap.empty) { const incidenteDoc = snap.docs[0], incidente = incidenteDoc.data(); document.getElementById('incidente-id').value = incidenteDoc.id; document.getElementById('empleado-afiliado').value = incidente.afiliado; document.getElementById('empleado-grado').value = incidente.grado; document.getElementById('empleado-nombre').value = incidente.empleado; document.getElementById('empleado-direccion').value = incidente.direccion; document.getElementById('solicitud-fecha').value = incidente.solicitudFecha; document.getElementById('solicitud-hora').value = incidente.solicitudHora; document.getElementById('empleado-unidad').value = incidente.unidad; document.getElementById('solicitud-tipo').value = incidente.solicitudTipo; document.getElementById('solicitud-motivo').value = incidente.motivo; document.getElementById('solicitud-observaciones').value = incidente.observacionesAviso; } } else { document.getElementById('empleado-unidad').value = currentUserUnidad; } document.getElementById('aviso-modal').classList.add('flex'); document.getElementById('aviso-modal').classList.remove('hidden');
+            const form = document.getElementById('aviso-form');
+            form.reset();
+            const mode = avisoId ? 'edit' : 'create';
+            document.getElementById('aviso-modal-title').textContent = mode === 'create' ? 'Agregar Aviso' : 'Editar Aviso';
+            document.getElementById('aviso-mode').value = mode;
+            document.getElementById('aviso-id').value = avisoId || '';
+            document.getElementById('incidente-id').value = '';
+
+            const canEditUnidad = selectedRole === 'administrador' || (selectedRole === 'personal' && currentUserUnidad === 'TODAS');
+            const unidadSelect = document.getElementById('empleado-unidad');
+            unidadSelect.innerHTML = '';
+            unidadesDisponibles.filter(u => u !== 'TODAS').forEach(u => {
+                const option = document.createElement('option');
+                option.value = u;
+                option.textContent = u;
+                unidadSelect.appendChild(option);
+            });
+
+            if (mode === 'edit') {
+                const q = query(collection(db, "incidentes"), where("avisoId", "==", avisoId));
+                const snap = await getDocs(q);
+                if (!snap.empty) {
+                    const incidenteDoc = snap.docs[0],
+                        incidente = incidenteDoc.data();
+                    document.getElementById('incidente-id').value = incidenteDoc.id;
+                    document.getElementById('empleado-afiliado').value = incidente.afiliado;
+                    document.getElementById('empleado-grado').value = incidente.grado;
+                    document.getElementById('empleado-funcion').value = incidente.funcion || '';
+                    document.getElementById('empleado-nombre').value = incidente.empleado;
+                    document.getElementById('empleado-direccion').value = incidente.direccion;
+                    document.getElementById('solicitud-fecha').value = incidente.solicitudFecha;
+                    document.getElementById('solicitud-hora').value = incidente.solicitudHora;
+                    unidadSelect.value = incidente.unidad;
+                    document.getElementById('solicitud-tipo').value = incidente.solicitudTipo;
+                    document.getElementById('solicitud-motivo').value = incidente.motivo;
+                    document.getElementById('solicitud-observaciones').value = incidente.observacionesAviso;
+                }
+            } else { // create mode
+                if (canEditUnidad) {
+                    unidadSelect.insertAdjacentHTML('afterbegin', '<option value="" disabled selected>-- Seleccione una unidad --</option>');
+                    unidadSelect.value = '';
+                } else {
+                    unidadSelect.value = currentUserUnidad;
+                }
+            }
+
+            unidadSelect.disabled = !canEditUnidad;
+            unidadSelect.classList.toggle('bg-gray-200', !canEditUnidad);
+            unidadSelect.classList.toggle('bg-gray-50', canEditUnidad);
+
+            document.getElementById('aviso-modal').classList.add('flex');
+            document.getElementById('aviso-modal').classList.remove('hidden');
         }
         function closeAvisoModal() { document.getElementById('aviso-modal').classList.add('hidden'); document.getElementById('aviso-modal').classList.remove('flex'); document.getElementById('aviso-form').reset(); }
         
-        document.getElementById('aviso-form').addEventListener('submit', async function(e) { e.preventDefault(); const mode = document.getElementById('aviso-mode').value, avisoId = document.getElementById('aviso-id').value, incidenteId = document.getElementById('incidente-id').value; const avisoData = { afiliado: document.getElementById('empleado-afiliado').value, empleado: document.getElementById('empleado-nombre').value, fecha: document.getElementById('solicitud-fecha').value, unidad: document.getElementById('empleado-unidad').value }; const incidenteData = { empleado: avisoData.empleado, afiliado: avisoData.afiliado, grado: document.getElementById('empleado-grado').value, direccion: document.getElementById('empleado-direccion').value, solicitudFecha: document.getElementById('solicitud-fecha').value, solicitudHora: document.getElementById('solicitud-hora').value, solicitudTipo: document.getElementById('solicitud-tipo').value, motivo: document.getElementById('solicitud-motivo').value, observacionesAviso: document.getElementById('solicitud-observaciones').value, unidad: avisoData.unidad }; try { if (mode === 'edit') { await updateDoc(doc(db, "avisos", avisoId), avisoData); await updateDoc(doc(db, "incidentes", incidenteId), incidenteData); await logActivity('UPDATE_AVISO', `Aviso para ${avisoData.empleado}`); } else { avisoData.status = 'Pendiente'; const avisoDocRef = await addDoc(collection(db, "avisos"), avisoData); incidenteData.avisoId = avisoDocRef.id; incidenteData.estado = 'Pendiente'; incidenteData.reconocimiento = null; incidenteData.asistencia = { sePresento: false, seComunico: false, observaciones: '' }; const incidenteDocRef = await addDoc(collection(db, "incidentes"), incidenteData); await updateDoc(incidenteDocRef, { id: incidenteDocRef.id }); await logActivity('CREATE_AVISO', `Aviso para ${avisoData.empleado}`); } closeAvisoModal(); } catch (error) { console.error(error); } });
+        document.getElementById('aviso-form').addEventListener('submit', async function(e) { 
+            e.preventDefault(); 
+            if (!document.getElementById('empleado-unidad').value) {
+                alert("Debe seleccionar una unidad.");
+                return;
+            }
+            const mode = document.getElementById('aviso-mode').value, avisoId = document.getElementById('aviso-id').value, incidenteId = document.getElementById('incidente-id').value; 
+            const avisoData = { afiliado: document.getElementById('empleado-afiliado').value, empleado: document.getElementById('empleado-nombre').value, fecha: document.getElementById('solicitud-fecha').value, unidad: document.getElementById('empleado-unidad').value }; 
+            const incidenteData = { empleado: avisoData.empleado, afiliado: avisoData.afiliado, grado: document.getElementById('empleado-grado').value, funcion: document.getElementById('empleado-funcion').value, direccion: document.getElementById('empleado-direccion').value, solicitudFecha: document.getElementById('solicitud-fecha').value, solicitudHora: document.getElementById('solicitud-hora').value, solicitudTipo: document.getElementById('solicitud-tipo').value, motivo: document.getElementById('solicitud-motivo').value, observacionesAviso: document.getElementById('solicitud-observaciones').value, unidad: avisoData.unidad }; 
+            try { if (mode === 'edit') { await updateDoc(doc(db, "avisos", avisoId), avisoData); await updateDoc(doc(db, "incidentes", incidenteId), incidenteData); await logActivity('UPDATE_AVISO', `Aviso para ${avisoData.empleado}`); } else { avisoData.status = 'Pendiente'; const avisoDocRef = await addDoc(collection(db, "avisos"), avisoData); incidenteData.avisoId = avisoDocRef.id; incidenteData.estado = 'Pendiente'; incidenteData.reconocimiento = null; incidenteData.asistencia = { sePresento: false, seComunico: false, observaciones: '' }; const incidenteDocRef = await addDoc(collection(db, "incidentes"), incidenteData); await updateDoc(incidenteDocRef, { id: incidenteDocRef.id }); await logActivity('CREATE_AVISO', `Aviso para ${avisoData.empleado}`); } closeAvisoModal(); } catch (error) { console.error(error); } });
         async function deleteAviso(avisoId) { if (confirm('¿Eliminar este aviso y su incidente asociado?')) { try { const q = query(collection(db, "incidentes"), where("avisoId", "==", avisoId)), snap = await getDocs(q), batch = writeBatch(db); snap.forEach(d => batch.delete(d.ref)); batch.delete(doc(db, "avisos", avisoId)); await batch.commit(); await logActivity('DELETE_AVISO', `Aviso ID: ${avisoId}`); alert('Aviso eliminado.'); } catch (error) { console.error(error); } } }
         
         // --- GESTIÓN DE INCIDENTES ---
@@ -1140,12 +1248,13 @@
                                     <p><span class="font-semibold">UNIDAD:</span> ${incidente.unidad}</p>
                                     <p><span class="font-semibold">AFILIADO N°:</span> ${incidente.afiliado}</p>
                                     <p><span class="font-semibold">GRADO:</span> ${incidente.grado}</p>
+                                    <p><span class="font-semibold">FUNCIÓN:</span> ${incidente.funcion || 'N/A'}</p>
                                 </div>
                                 <div class="w-1/3">
                                     <p><span class="font-semibold">TIPO:</span> ${incidente.solicitudTipo}</p>
                                 </div>
                                 <div class="w-1/3 text-right">
-                                     <p><span class="font-semibold">APELLIDO Y NOMBRES:</span> ${incidente.empleado}</p>
+                                     <p><span class="font-semibold">APELLIDO Y NOMBRES:</span> <span class="text-base font-bold">${incidente.empleado}</span></p>
                                      <p><span class="font-semibold">DIRECCIÓN:</span> ${incidente.direccion}</p>
                                 </div>
                             </div>
@@ -1153,7 +1262,7 @@
                                 <div class="flex items-center space-x-4">
                                 ${isEditable ? `
                                     <label class="flex items-center"><input type="radio" name="motivo_reconocimiento" value="ENFERMEDAD DEL AGENTE" ${incidente.motivo === 'ENFERMEDAD DEL AGENTE' ? 'checked' : ''}>ENF. AGENTE</label>
-                                    <label class="flex items-center"><input type="radio" name="motivo_reconocimiento" value="ENFERMEDAD DE PARIENTE" ${incidente.motivo === 'ENFERMEDAD DE PARIENTE' ? 'checked' : ''}>ENF. PARIENTE</label>
+                                    <label class="flex items-center"><input type="radio" name="motivo_reconocimiento" value="PERSONA A CARGO / FAMILIAR" ${incidente.motivo === 'PERSONA A CARGO / FAMILIAR' ? 'checked' : ''}>PERS. A CARGO / FAM.</label>
                                 ` : `<p>${incidente.motivo}</p>`}
                                 </div>
                                 <div><span class="font-semibold">SOLICITUD:</span> ${formatDate(incidente.solicitudFecha)}, ${incidente.solicitudHora}</div>
@@ -1186,7 +1295,7 @@
                                     <div class="grid grid-cols-4 gap-2 items-end">
                                         <div><label class="font-semibold">DESDE:</label><input type="date" name="licenciaDesde" value="${incidente.reconocimiento?.licenciaDesde || ''}" ${!isEditable ? 'readonly' : ''} class="w-full border p-1 mt-1 bg-gray-50 text-xs" required></div>
                                         <div><label class="font-semibold">DÍAS:</label><input type="number" name="dias" value="${incidente.reconocimiento?.dias || ''}" ${!isEditable ? 'readonly' : ''} class="w-full border p-1 mt-1 bg-gray-50 text-xs" required></div>
-                                        <div><label class="font-semibold">ALTA:</label><input type="date" name="altaDesde" value="${incidente.reconocimiento?.altaDesde || ''}" readonly class="w-full border p-1 mt-1 bg-gray-200 text-xs"></div>
+                                        <div><label class="font-semibold">HASTA:</label><input type="date" name="altaDesde" value="${incidente.reconocimiento?.altaDesde || ''}" readonly class="w-full border p-1 mt-1 bg-gray-200 text-xs"></div>
                                         <div><label class="font-semibold">ENCUADRA:</label><select name="encuadra" ${!isEditable ? 'disabled' : ''} class="w-full border p-1 mt-1 bg-gray-50 text-xs" required>
                                             <option value="" disabled selected>-- Sel --</option>
                                             <option value="ART. 14" ${incidente.reconocimiento?.encuadra === 'ART. 14' ? 'selected' : ''}>ART. 14</option>
