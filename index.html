@@ -579,7 +579,7 @@
                 </div>
                 <div>
                     <label for="search-encuadra-aviso" class="block mb-2 text-sm font-medium text-gray-900">Encuadre</label>
-                    <select id="search-encuadra-aviso" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5">
+                    <select id="search-encuadra-aviso" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
                         <option value="TODOS">Todos</option>
                         <option value="ART. 14">ART. 14</option>
                         <option value="ART. 19">ART. 19</option>
@@ -1048,16 +1048,17 @@
                             const record = { 
                                 afiliado: matricula, 
                                 nombreCompleto: row[headers.indexOf('Apellido y Nombre')], 
-                                grado: row[headers.indexOf('Jerarquia')], 
-                                direccion: row[headers.indexOf('Dom_actua')],
-                                funcion: row[headers.indexOf('Funcion')] || ''
+                                grado: row[headers.indexOf('Jerarquia')] || '', 
+                                direccion: row[headers.indexOf('Dom_actua')] || '',
+                                funcion: row[headers.indexOf('Funcion')] || '' // Asegura que el campo funcion exista
                             }; 
-                            batch.set(doc(db, "personal", matricula), record); 
+                            // Utiliza merge: true para actualizar sin borrar otros campos
+                            batch.set(doc(db, "personal", matricula), record, { merge: true }); 
                         } 
                     }); 
                     await batch.commit(); 
-                    await logActivity('IMPORT_PERSONNEL', `Importó ${personalData.length} registros.`); 
-                    statusDiv.innerHTML = `<p class="text-green-500">Éxito: ${personalData.length} registros cargados.</p>`; 
+                    await logActivity('IMPORT_PERSONNEL', `Importó/Actualizó ${personalData.length} registros.`); 
+                    statusDiv.innerHTML = `<p class="text-green-500">Éxito: ${personalData.length} registros procesados (nuevos o actualizados).</p>`; 
                 } catch (error) { 
                     statusDiv.innerHTML = `<p class="text-red-500">Error: ${error.message}</p>`; 
                 } 
@@ -1073,8 +1074,13 @@
                 document.getElementById('empleado-nombre').value = e.nombreCompleto || ''; 
                 document.getElementById('empleado-grado').value = e.grado || ''; 
                 document.getElementById('empleado-direccion').value = e.direccion || ''; 
-                document.getElementById('empleado-funcion').value = e.funcion || '';
-            } 
+                document.getElementById('empleado-funcion').value = e.funcion || ''; // Precarga editable
+            } else {
+                 document.getElementById('empleado-nombre').value = ''; 
+                 document.getElementById('empleado-grado').value = ''; 
+                 document.getElementById('empleado-direccion').value = ''; 
+                 document.getElementById('empleado-funcion').value = ''; // Limpia si no existe
+            }
         }
         
         function listenToAvisos(status) {
@@ -1160,7 +1166,7 @@
                     document.getElementById('incidente-id').value = incidenteDoc.id;
                     document.getElementById('empleado-afiliado').value = incidente.afiliado;
                     document.getElementById('empleado-grado').value = incidente.grado;
-                    document.getElementById('empleado-funcion').value = incidente.funcion || '';
+                    document.getElementById('empleado-funcion').value = incidente.funcion || ''; // Precarga campo funcion
                     document.getElementById('empleado-nombre').value = incidente.empleado;
                     document.getElementById('empleado-direccion').value = incidente.direccion;
                     document.getElementById('solicitud-fecha').value = incidente.solicitudFecha;
@@ -1196,6 +1202,7 @@
             }
             const mode = document.getElementById('aviso-mode').value, avisoId = document.getElementById('aviso-id').value, incidenteId = document.getElementById('incidente-id').value; 
             const avisoData = { afiliado: document.getElementById('empleado-afiliado').value, empleado: document.getElementById('empleado-nombre').value, fecha: document.getElementById('solicitud-fecha').value, unidad: document.getElementById('empleado-unidad').value }; 
+            // Incluir el campo funcion al guardar/actualizar
             const incidenteData = { empleado: avisoData.empleado, afiliado: avisoData.afiliado, grado: document.getElementById('empleado-grado').value, funcion: document.getElementById('empleado-funcion').value, direccion: document.getElementById('empleado-direccion').value, solicitudFecha: document.getElementById('solicitud-fecha').value, solicitudHora: document.getElementById('solicitud-hora').value, solicitudTipo: document.getElementById('solicitud-tipo').value, motivo: document.getElementById('solicitud-motivo').value, observacionesAviso: document.getElementById('solicitud-observaciones').value, unidad: avisoData.unidad }; 
             try { if (mode === 'edit') { await updateDoc(doc(db, "avisos", avisoId), avisoData); await updateDoc(doc(db, "incidentes", incidenteId), incidenteData); await logActivity('UPDATE_AVISO', `Aviso para ${avisoData.empleado}`); } else { avisoData.status = 'Pendiente'; const avisoDocRef = await addDoc(collection(db, "avisos"), avisoData); incidenteData.avisoId = avisoDocRef.id; incidenteData.estado = 'Pendiente'; incidenteData.reconocimiento = null; incidenteData.asistencia = { sePresento: false, seComunico: false, observaciones: '' }; const incidenteDocRef = await addDoc(collection(db, "incidentes"), incidenteData); await updateDoc(incidenteDocRef, { id: incidenteDocRef.id }); await logActivity('CREATE_AVISO', `Aviso para ${avisoData.empleado}`); } closeAvisoModal(); } catch (error) { console.error(error); } });
         async function deleteAviso(avisoId) { if (confirm('¿Eliminar este aviso y su incidente asociado?')) { try { const q = query(collection(db, "incidentes"), where("avisoId", "==", avisoId)), snap = await getDocs(q), batch = writeBatch(db); snap.forEach(d => batch.delete(d.ref)); batch.delete(doc(db, "avisos", avisoId)); await batch.commit(); await logActivity('DELETE_AVISO', `Aviso ID: ${avisoId}`); alert('Aviso eliminado.'); } catch (error) { console.error(error); } } }
@@ -1248,7 +1255,7 @@
                                     <p><span class="font-semibold">UNIDAD:</span> ${incidente.unidad}</p>
                                     <p><span class="font-semibold">AFILIADO N°:</span> ${incidente.afiliado}</p>
                                     <p><span class="font-semibold">GRADO:</span> ${incidente.grado}</p>
-                                    <p><span class="font-semibold">FUNCIÓN:</span> ${incidente.funcion || 'N/A'}</p>
+                                    <p><span class="font-semibold">FUNCIÓN:</span> ${incidente.funcion || 'N/A'}</p> 
                                 </div>
                                 <div class="w-1/3">
                                     <p><span class="font-semibold">TIPO:</span> ${incidente.solicitudTipo}</p>
@@ -1466,7 +1473,7 @@
                 'Fecha Aviso': aviso.fecha,
                 'Estado': aviso.status,
                 'Diagnóstico': aviso.diagnostico || 'N/A',
-                'Encuadre': aviso.encuadra || 'N/A'
+                'Encuadre': aviso.encuadre || 'N/A'
             }));
 
             const ws = XLSX.utils.json_to_sheet(dataToExport);
@@ -1505,5 +1512,4 @@
     </script>
 </body>
 </html>
-
 
