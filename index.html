@@ -50,6 +50,30 @@
                 resize: none;
             }
         }
+        /* Estilos para la paginación */
+        .pagination-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 1rem;
+        }
+        .pagination-controls button {
+            background-color: #d1d5db; /* bg-gray-300 */
+            padding: 0.25rem 0.75rem;
+            border-radius: 0.375rem; /* rounded-lg */
+            transition: background-color 0.2s;
+        }
+        .pagination-controls button:hover:not(:disabled) {
+            background-color: #9ca3af; /* bg-gray-400 */
+        }
+        .pagination-controls button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .pagination-controls span {
+            font-size: 0.875rem; /* text-sm */
+            color: #4b5563; /* text-gray-600 */
+        }
     </style>
 </head>
 <body class="bg-gray-100 font-sans">
@@ -185,7 +209,7 @@
                         </div>
                         <div class="bg-white p-6 rounded-2xl shadow-lg">
                              <div class="mb-4">
-                                <input type="text" id="search-usuarios" onkeyup="filterTable('search-usuarios', 'usuarios-table', [0, 1])" placeholder="Buscar por Afiliado o Nombre..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                                <input type="text" id="search-usuarios" onkeyup="filterTable('usuarios-table')" placeholder="Buscar por Afiliado o Nombre..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
                              </div>
                              <div class="overflow-x-auto">
                                 <table class="w-full text-sm text-left text-gray-500">
@@ -202,6 +226,7 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <div id="usuarios-table-pagination" class="pagination-controls mt-4"></div>
                         </div>
                     </div>
 
@@ -236,7 +261,7 @@
                         </div>
                         <div class="bg-white p-6 rounded-2xl shadow-lg">
                             <div class="mb-4">
-                                <input type="text" id="search-avisos-pendientes" onkeyup="filterTable('search-avisos-pendientes', 'avisos-pendientes-table', [0, 1, 3])" placeholder="Buscar por Afiliado, Empleado o Unidad..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                                <input type="text" id="search-avisos-pendientes" onkeyup="filterTable('avisos-pendientes-table')" placeholder="Buscar por Afiliado, Empleado o Unidad..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
                             </div>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-sm text-left text-gray-500">
@@ -253,6 +278,7 @@
                                     <tbody id="avisos-pendientes-table"></tbody>
                                 </table>
                             </div>
+                            <div id="avisos-pendientes-table-pagination" class="pagination-controls mt-4"></div>
                         </div>
                     </div>
                     
@@ -266,7 +292,7 @@
                         </div>
                         <div class="bg-white p-6 rounded-2xl shadow-lg">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                                <input type="text" id="search-avisos-visados" onkeyup="filterTable('search-avisos-visados', 'avisos-visados-table', [0, 1, 3, 4])" placeholder="Buscar por Afiliado, Empleado, Unidad o Diagnóstico..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                                <input type="text" id="search-avisos-visados" onkeyup="filterTable('avisos-visados-table')" placeholder="Buscar por Afiliado, Empleado, Unidad o Diagnóstico..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
                                 <select id="filtro-encuadra" onchange="showView('avisos-visados')" class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
                                     <option value="TODOS">Filtrar por Encuadre (Todos)</option>
                                     <option value="ART. 14">ART. 14</option>
@@ -294,15 +320,15 @@
                                     <tbody id="avisos-visados-table"></tbody>
                                 </table>
                             </div>
+                            <div id="avisos-visados-table-pagination" class="pagination-controls mt-4"></div>
                         </div>
                     </div>
-
 
                     <div id="pendientes-view" class="view-content hidden fade-in">
                          <h2 class="text-3xl font-bold mb-6 text-gray-700">Incidentes Pendientes</h2>
                          <div class="bg-white p-6 rounded-2xl shadow-lg">
                             <div class="mb-4">
-                                <input type="text" id="search-pendientes" onkeyup="filterTable('search-pendientes', 'pendientes-table', [1, 2])" placeholder="Buscar por Afiliado o Empleado..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                                <input type="text" id="search-pendientes" onkeyup="filterTable('pendientes-table')" placeholder="Buscar por Afiliado o Empleado..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
                             </div>
                              <div class="overflow-x-auto">
                                 <table class="w-full text-sm text-left text-gray-500">
@@ -319,6 +345,7 @@
                                     <tbody id="pendientes-table"></tbody>
                                 </table>
                             </div>
+                            <div id="pendientes-table-pagination" class="pagination-controls mt-4"></div>
                         </div>
                     </div>
                     
@@ -326,7 +353,7 @@
                          <h2 class="text-3xl font-bold mb-6 text-gray-700">Incidentes Completados</h2>
                          <div class="bg-white p-6 rounded-2xl shadow-lg">
                             <div class="mb-4">
-                                <input type="text" id="search-completados" onkeyup="filterTable('search-completados', 'completados-table', [1, 2])" placeholder="Buscar por Afiliado o Empleado..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                                <input type="text" id="search-completados" onkeyup="filterTable('completados-table')" placeholder="Buscar por Afiliado o Empleado..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
                             </div>
                              <div class="overflow-x-auto">
                                 <table class="w-full text-sm text-left text-gray-500">
@@ -343,6 +370,7 @@
                                     <tbody id="completados-table"></tbody>
                                 </table>
                             </div>
+                            <div id="completados-table-pagination" class="pagination-controls mt-4"></div>
                         </div>
                     </div>
                     
@@ -359,7 +387,7 @@
                         </div>
                         <div class="bg-white p-6 rounded-2xl shadow-lg">
                             <div class="mb-4">
-                                <input type="text" id="search-evaluados" onkeyup="filterTable('search-evaluados', 'evaluados-table', [1, 2, 4])" placeholder="Buscar por Afiliado, Empleado o Encuadre..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                                <input type="text" id="search-evaluados" onkeyup="filterTable('evaluados-table')" placeholder="Buscar por Afiliado, Empleado o Encuadre..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
                             </div>
                              <div class="overflow-x-auto">
                                 <table class="w-full text-sm text-left text-gray-500">
@@ -379,6 +407,7 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <div id="evaluados-table-pagination" class="pagination-controls mt-4"></div>
                         </div>
                     </div>
                     
@@ -400,9 +429,13 @@
                         </div>
                         <div class="bg-white p-6 rounded-2xl shadow-lg">
                             <h3 class="text-xl font-bold mb-4">Resultados</h3>
+                             <div class="mb-4">
+                                <input type="text" id="search-antecedentes" onkeyup="filterTable('antecedentes-table')" placeholder="Filtrar resultados..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                            </div>
                             <div id="antecedentes-table-container">
                                <p class="text-center p-4">Ingrese un criterio de búsqueda para ver los resultados.</p>
                             </div>
+                            <div id="antecedentes-table-pagination" class="pagination-controls mt-4"></div>
                         </div>
                     </div>
 
@@ -413,7 +446,7 @@
                         <div class="bg-white p-6 rounded-2xl shadow-lg">
                              <div class="mb-4">
                                 <!-- CAMBIO: Se añade la columna 3 (observaciones) a la búsqueda -->
-                                <input type="text" id="search-profesionales" onkeyup="filterTable('search-profesionales', 'profesionales-table', [0, 1, 3])" placeholder="Buscar por Matrícula, Nombre u Observación..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                                <input type="text" id="search-profesionales" onkeyup="filterTable('profesionales-table')" placeholder="Buscar por Matrícula, Nombre u Observación..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
                              </div>
                              <div class="overflow-x-auto">
                                 <table class="w-full text-sm text-left text-gray-500">
@@ -431,6 +464,7 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <div id="profesionales-table-pagination" class="pagination-controls mt-4"></div>
                         </div>
                     </div>
 
@@ -438,7 +472,7 @@
                         <h2 class="text-3xl font-bold mb-6 text-gray-700">Registro de Actividad del Sistema</h2>
                         <div class="bg-white p-6 rounded-2xl shadow-lg">
                             <div class="mb-4">
-                                <input type="text" id="search-registro" onkeyup="filterTable('search-registro', 'registro-table', [1, 2, 3, 5])" placeholder="Buscar por afiliado, usuario, acción o descripción..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                                <input type="text" id="search-registro" onkeyup="filterTable('registro-table')" placeholder="Buscar por afiliado, usuario, acción o descripción..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
                             </div>
                             <div class="overflow-x-auto">
                                 <table class="w-full text-sm text-left text-gray-500">
@@ -455,6 +489,7 @@
                                     <tbody id="registro-table"></tbody>
                                 </table>
                             </div>
+                            <div id="registro-table-pagination" class="pagination-controls mt-4"></div>
                         </div>
                     </div>
 
@@ -494,7 +529,7 @@
                         </div>
                         <div class="bg-white p-6 rounded-2xl shadow-lg">
                              <div class="mb-4">
-                                <input type="text" id="search-presentarse" onkeyup="filterTable('search-presentarse', 'presentarse-table', [0, 1, 2])" placeholder="Buscar por Afiliado, Empleado o Unidad..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                                <input type="text" id="search-presentarse" onkeyup="filterTable('presentarse-table')" placeholder="Buscar por Afiliado, Empleado o Unidad..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
                              </div>
                              <div class="overflow-x-auto">
                                 <table class="w-full text-sm text-left text-gray-500">
@@ -516,6 +551,7 @@
                                     </tbody>
                                 </table>
                             </div>
+                            <div id="presentarse-table-pagination" class="pagination-controls mt-4"></div>
                         </div>
                     </div>
 
@@ -623,8 +659,27 @@
              </div>
              <div id="avisos-fecha-results" class="flex-grow overflow-y-auto border-t pt-4">
                 <p class="text-center text-gray-500">Seleccione un período de fechas para ver los avisos.</p>
+                 <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2">Afiliado</th>
+                                <th class="px-4 py-2">Empleado</th>
+                                <th class="px-4 py-2">Dep.</th>
+                                <th class="px-4 py-2">Unidad</th>
+                                <th class="px-4 py-2">Fecha</th>
+                                <th class="px-4 py-2">Estado</th>
+                                <th class="px-4 py-2">Encuadre</th>
+                            </tr>
+                        </thead>
+                        <tbody id="avisos-fecha-table">
+                            <!-- Contenido se generará aquí -->
+                        </tbody>
+                    </table>
+                </div>
              </div>
-             <div class="flex justify-between items-center mt-6">
+             <div id="avisos-fecha-table-pagination" class="pagination-controls mt-4 flex-shrink-0"></div>
+             <div class="flex justify-between items-center mt-6 flex-shrink-0">
                 <button type="button" onclick="exportAvisosToXLS()" class="py-2 px-6 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center space-x-2">
                     <i class="fas fa-file-excel"></i>
                     <span>Exportar a XLS</span>
@@ -732,10 +787,16 @@
         let currentUser = null;
         let selectedRole = null;
         let currentUserUnidad = null;
-        let currentAvisosSearchResult = [];
+        let currentAvisosSearchResult = []; // Se mantiene para la exportación
         const unidadesDisponibles = ['TODAS', 'CC1', 'CC2', 'EP3', 'EP4', 'EP5', 'EP6', 'EP7', 'EP8', 'EP9', 'JEFATURA', 'EDIFICIO LAPRIDA', 'ESCUELA DE CADETES', 'ESCUELA DE SUBOFICIALES'];
         let sortState = {}; // Para rastrear el estado de ordenamiento de las tablas
         let isSyncingProfesionales = false; // Declarada en el ámbito global
+
+        // --- INICIO: NUEVOS ESTADOS GLOBALES PARA PAGINACIÓN ---
+        let paginationState = {}; // { tableId: { currentPage: 1, rowsPerPage: 100 } }
+        let allDataCache = {};   // { tableId: [...] }
+        const ROWS_PER_PAGE = 100;
+        // --- FIN: NUEVOS ESTADOS GLOBALES ---
 
         // Listeners
         let unsubscribeAvisosPendientes = null;
@@ -938,8 +999,21 @@
                 'evaluados': 'Consultar Evaluados por Fecha', 'antecedentes': 'Buscar Antecedentes', 'registro': 'Registro de Actividad',
                 'profesionales': 'Gestión de Profesionales'
             };
+            // Resetea el título principal. El listener de snapshot lo actualizará con el conteo.
             document.getElementById('view-title').textContent = titles[viewId] || 'Bienvenido';
             
+            // Inicializa el estado de paginación para la vista
+            const tableId = getTableIdForView(viewId);
+            if (tableId) {
+                paginationState[tableId] = { currentPage: 1, rowsPerPage: ROWS_PER_PAGE };
+                allDataCache[tableId] = []; // Limpia el caché al cambiar de vista
+                // Limpia la tabla y la paginación al cambiar de vista
+                const tableBody = document.getElementById(tableId);
+                const paginationControls = document.getElementById(`${tableId}-pagination`);
+                if(tableBody) tableBody.innerHTML = '';
+                if(paginationControls) paginationControls.innerHTML = '';
+            }
+
             if (viewId === 'inicio') renderInicioView();
             if (viewId === 'avisos-pendientes') listenToAvisos('Pendiente');
             if (viewId === 'avisos-visados') listenToAvisos('Completado');
@@ -960,6 +1034,25 @@
             }
         }
         
+        // --- INICIO: NUEVA FUNCIÓN ---
+        // Mapea un viewId al tableId principal de esa vista
+        function getTableIdForView(viewId) {
+            const map = {
+                'usuarios': 'usuarios-table',
+                'avisos-pendientes': 'avisos-pendientes-table',
+                'avisos-visados': 'avisos-visados-table',
+                'pendientes': 'pendientes-table',
+                'completados': 'completados-table',
+                'evaluados': 'evaluados-table',
+                'antecedentes': 'antecedentes-table',
+                'profesionales': 'profesionales-table',
+                'registro': 'registro-table',
+                'presentarse': 'presentarse-table'
+            };
+            return map[viewId] || null;
+        }
+        // --- FIN: NUEVA FUNCIÓN ---
+
         function renderInicioView() {
             const container = document.getElementById('inicio-view');
             let content = `<h2 class="text-3xl font-bold mb-6 text-gray-700">Bienvenido, ${currentUser.nombreCompleto}</h2>`;
@@ -1003,14 +1096,23 @@
 
         // --- GESTIÓN DE USUARIOS (ADMIN) ---
         function listenToUsers() {
+            const tableId = 'usuarios-table';
+            const baseTitle = 'Gestión de Usuarios';
+            const viewHeader = document.querySelector('#usuarios-view h2');
+
             unsubscribeUsers = onSnapshot(collection(db, "users"), (snapshot) => {
-                const tableBody = document.getElementById('usuarios-table');
-                tableBody.innerHTML = '';
-                snapshot.forEach(doc => {
-                    const user = doc.data();
-                    const roles = Array.isArray(user.roles) ? user.roles.join(', ') : (user.role || 'N/A');
-                    tableBody.innerHTML += `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-6 py-4">${user.afiliado}</td><td class="px-6 py-4">${user.nombreCompleto}</td><td class="px-6 py-4 capitalize">${roles}</td><td class="px-6 py-4 space-x-2"><button onclick="openUsuarioModal('${user.afiliado}')" class="text-blue-600 hover:text-blue-800" title="Editar"><i class="fas fa-edit"></i></button><button onclick="resetPassword('${user.afiliado}')" class="text-yellow-600 hover:text-yellow-800" title="Blanquear Contraseña"><i class="fas fa-key"></i></button><button onclick="deleteUser('${user.afiliado}')" class="text-red-600 hover:text-red-800" title="Eliminar"><i class="fas fa-trash"></i></button></td></tr>`;
-                });
+                const totalCount = snapshot.size;
+                const titleWithCount = `${baseTitle} (${totalCount})`;
+                viewHeader.textContent = titleWithCount;
+                if (!document.getElementById('usuarios-view').classList.contains('hidden')) {
+                    document.getElementById('view-title').textContent = titleWithCount;
+                }
+
+                allDataCache[tableId] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (!paginationState[tableId]) {
+                    paginationState[tableId] = { currentPage: 1, rowsPerPage: ROWS_PER_PAGE };
+                }
+                renderPaginatedTable(tableId);
             });
         }
         
@@ -1122,10 +1224,13 @@
             }
         }
         
+        // --- GESTIÓN DE AVISOS (PERSONAL/ADMIN) ---
         function listenToAvisos(status) {
             const isPending = status === 'Pendiente';
             const tableId = isPending ? 'avisos-pendientes-table' : 'avisos-visados-table';
-            const tableBody = document.getElementById(tableId);
+            const viewId = isPending ? 'avisos-pendientes-view' : 'avisos-visados-view';
+            const viewHeader = document.querySelector(`#${viewId} h2`);
+            const baseTitle = isPending ? 'Avisos de Carpetas Pendientes' : 'Avisos de Carpetas Visados';
 
             let baseConditions = [where("status", "==", status)];
             if (selectedRole === 'personal' && currentUserUnidad !== 'TODAS') {
@@ -1142,36 +1247,18 @@
             const q = query(collection(db, "avisos"), ...baseConditions);
 
             const listener = onSnapshot(q, (snapshot) => {
-                tableBody.innerHTML = '';
-                const colspan = isPending ? 6 : 7;
-                if (snapshot.empty) {
-                    tableBody.innerHTML = `<tr><td colspan="${colspan}" class="text-center p-4">No hay avisos que coincidan con los filtros.</td></tr>`;
-                    return;
+                const totalCount = snapshot.size;
+                const titleWithCount = `${baseTitle} (${totalCount})`;
+                viewHeader.textContent = titleWithCount;
+                if (!document.getElementById(viewId).classList.contains('hidden')) {
+                    document.getElementById('view-title').textContent = titleWithCount;
                 }
-                snapshot.forEach((doc) => {
-                    const aviso = doc.data();
-                    let actionsHtml = '<td class="px-6 py-4 space-x-2 text-right">';
-                    
-                    if (isPending) {
-                        const canEdit = (selectedRole === 'administrador') || (selectedRole === 'personal');
-                        const canDelete = selectedRole === 'administrador';
-                        if (canEdit) actionsHtml += `<button onclick="openAvisoModal('${doc.id}')" class="text-blue-600 hover:text-blue-800" title="Editar"><i class="fas fa-edit"></i></button>`;
-                        if (canDelete) actionsHtml += `<button onclick="deleteAviso('${doc.id}')" class="text-red-600 hover:text-red-800" title="Eliminar"><i class="fas fa-trash"></i></button>`;
-                    } else { // Visados
-                        if (aviso.incidenteId) {
-                            actionsHtml += `<button onclick="openFormulario('${aviso.incidenteId}', 'avisos-visados', true)" class="text-gray-500 hover:text-blue-600" title="Ver Carta Médica"><i class="fas fa-eye"></i></button>`;
-                        }
-                        if (selectedRole === 'administrador') {
-                            actionsHtml += `<button onclick="openAvisoModal('${doc.id}')" class="text-blue-600 hover:text-blue-800" title="Editar"><i class="fas fa-edit"></i></button>`;
-                            actionsHtml += `<button onclick="deleteAviso('${doc.id}')" class="text-red-600 hover:text-red-800" title="Eliminar"><i class="fas fa-trash"></i></button>`;
-                        }
-                    }
-                    actionsHtml += '</td>';
 
-                    const diagnosticoColumn = isPending ? '' : `<td class="px-6 py-4 text-xs">${aviso.diagnostico || 'N/A'}</td>`;
-                    
-                    tableBody.innerHTML += `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-6 py-4">${aviso.afiliado || 'N/A'}</td><td class="px-6 py-4">${aviso.empleado}</td><td class="px-6 py-4">${getUnidadTag(aviso.unidad)}</td><td class="px-6 py-4">${formatDate(aviso.fecha)}</td><td class="px-6 py-4">${aviso.unidad}</td>${diagnosticoColumn}${actionsHtml}</tr>`;
-                });
+                allDataCache[tableId] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (!paginationState[tableId]) {
+                    paginationState[tableId] = { currentPage: 1, rowsPerPage: ROWS_PER_PAGE };
+                }
+                renderPaginatedTable(tableId);
             });
 
             if(isPending) unsubscribeAvisosPendientes = listener; else unsubscribeAvisosVisados = listener;
@@ -1250,12 +1337,27 @@
         function listenToIncidentes(status) {
             const isPending = status === 'Pendiente';
             const tableId = isPending ? 'pendientes-table' : 'completados-table';
+            const viewId = isPending ? 'pendientes-view' : 'completados-view';
+            const viewHeader = document.querySelector(`#${viewId} h2`);
+            const baseTitle = isPending ? 'Incidentes Pendientes' : 'Incidentes Completados';
+
             const q = query(collection(db, "incidentes"), where("estado", "==", status));
+            
             const listener = onSnapshot(q, (snapshot) => {
-                const tableBody = document.getElementById(tableId); tableBody.innerHTML = '';
-                if (snapshot.empty) { tableBody.innerHTML = `<tr><td colspan="6" class="text-center p-4">No hay incidentes ${status.toLowerCase()}s.</td></tr>`; return; }
-                snapshot.forEach(d => { const incidente = d.data(); const dateField = formatDate(isPending ? incidente.solicitudFecha : (incidente.reconocimiento?.fechaEvaluacion)); const btnText = isPending ? 'Evaluar' : 'Ver/Editar'; tableBody.innerHTML += `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-6 py-4">${incidente.id || 'N/A'}</td><td class="px-6 py-4">${incidente.afiliado || 'N/A'}</td><td class="px-6 py-4">${incidente.empleado}</td><td class="px-6 py-4">${getUnidadTag(incidente.unidad)}</td><td class="px-6 py-4">${dateField}</td><td class="px-6 py-4"><button onclick="openFormulario('${d.id}', '${isPending ? 'pendientes' : 'completados'}')" class="text-blue-600 hover:underline">${btnText}</button></td></tr>`; });
+                const totalCount = snapshot.size;
+                const titleWithCount = `${baseTitle} (${totalCount})`;
+                viewHeader.textContent = titleWithCount;
+                if (!document.getElementById(viewId).classList.contains('hidden')) {
+                    document.getElementById('view-title').textContent = titleWithCount;
+                }
+
+                allDataCache[tableId] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (!paginationState[tableId]) {
+                    paginationState[tableId] = { currentPage: 1, rowsPerPage: ROWS_PER_PAGE };
+                }
+                renderPaginatedTable(tableId);
             });
+
             if (isPending) unsubscribePendientes = listener; else unsubscribeCompletados = listener;
         }
         
@@ -1531,18 +1633,42 @@
             } catch (error) {
                 console.error("Error fetching medico info:", error);
                 // CAMBIO: Mensaje de error mejorado para indicar la carga manual.
-                statusContainer.innerHTML = '<p class="text-xs text-orange-500">Error de red. Cargue el nombre manually.</p>';
+                statusContainer.innerHTML = '<p class="text-xs text-orange-500">Error de red. Cargue el nombre manualmente.</p>';
             }
         }
 
         // --- BÚSQUEDAS Y FILTROS ---
-        async function filtrarEvaluadosPorFecha() { const fecha = document.getElementById('fecha-evaluados').value, tableBody = document.getElementById('evaluados-table'); if (!fecha) { tableBody.innerHTML = '<tr><td colspan="7" class="text-center p-4 text-red-500">Seleccione una fecha.</td></tr>'; return; } const q = query(collection(db, "incidentes"), where("estado", "==", "Completado"), where("reconocimiento.fechaEvaluacion", "==", fecha)); const snapshot = await getDocs(q); tableBody.innerHTML = ''; if (snapshot.empty) { tableBody.innerHTML = '<tr><td colspan="7" class="text-center p-4">No se encontraron evaluados.</td></tr>'; } else { snapshot.forEach(doc => { const inc = doc.data(); tableBody.innerHTML += `<tr class="bg-white border-b"><td class="px-6 py-4">${inc.id}</td><td class="px-6 py-4">${inc.afiliado}</td><td class="px-6 py-4">${inc.empleado}</td><td class="px-6 py-4">${getUnidadTag(inc.unidad)}</td><td class="px-6 py-4">${formatDate(inc.reconocimiento.fechaEvaluacion)}</td><td class="px-6 py-4">${inc.reconocimiento.encuadra}</td><td class="px-6 py-4"><button onclick="openFormulario('${doc.id}', 'evaluados')" class="text-blue-600 hover:underline">Ver</button></td></tr>`; }); } }
+        async function filtrarEvaluadosPorFecha() { 
+            const tableId = 'evaluados-table';
+            const fecha = document.getElementById('fecha-evaluados').value, tableBody = document.getElementById(tableId); 
+            if (!fecha) { 
+                tableBody.innerHTML = '<tr><td colspan="7" class="text-center p-4 text-red-500">Seleccione una fecha.</td></tr>'; 
+                allDataCache[tableId] = [];
+                renderPaginatedTable(tableId); // Renderiza para mostrar 0 registros
+                return; 
+            } 
+            const q = query(collection(db, "incidentes"), where("estado", "==", "Completado"), where("reconocimiento.fechaEvaluacion", "==", fecha)); 
+            const snapshot = await getDocs(q); 
+            
+            allDataCache[tableId] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            paginationState[tableId] = { currentPage: 1, rowsPerPage: ROWS_PER_PAGE };
+            renderPaginatedTable(tableId);
+        }
+        
         async function searchAntecedentes() { 
+            const tableId = 'antecedentes-table';
             const afiliado = document.getElementById('search-antecedentes-afiliado').value.trim();
             const matriculaInput = document.getElementById('search-antecedentes-matricula').value.trim();
             const container = document.getElementById('antecedentes-table-container'); 
-            if (!afiliado && !matriculaInput) { container.innerHTML = '<p class="text-center p-4 text-red-500">Ingrese un criterio.</p>'; return; } 
+            
+            if (!afiliado && !matriculaInput) { 
+                container.innerHTML = '<p class="text-center p-4 text-red-500">Ingrese un criterio.</p>'; 
+                allDataCache[tableId] = [];
+                renderPaginatedTable(tableId);
+                return; 
+            } 
             container.innerHTML = '<p class="text-center p-4">Buscando...</p>'; 
+            
             let conditions = [where("estado", "==", "Completado")]; 
             if (afiliado) conditions.push(where("afiliado", "==", afiliado)); 
             if (matriculaInput) {
@@ -1550,13 +1676,28 @@
                 conditions.push(where("reconocimiento.medicoMatricula", "==", matriculaSanitized)); 
             }
             const q = query(collection(db, "incidentes"), ...conditions), snapshot = await getDocs(q); 
-            if (snapshot.empty) { container.innerHTML = '<p class="text-center p-4">No se encontraron antecedentes.</p>'; } else { let html = `<div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-xs text-gray-700 uppercase bg-gray-50"><th class="px-6 py-3">Afiliado</th><th class="px-6 py-3">Empleado</th><th class="px-6 py-3">Dep.</th><th class="px-6 py-3">Fecha Ev.</th><th class="px-6 py-3">Diagnóstico</th><th class="px-6 py-3">Médico</th><th class="px-6 py-3">Acción</th></tr></thead><tbody>`; snapshot.forEach(d => { const i = d.data(), r = i.reconocimiento; html += `<tr class="bg-white border-b"><td class="px-6 py-4">${i.afiliado}</td><td class="px-6 py-4">${i.empleado}</td><td class="px-6 py-4">${getUnidadTag(i.unidad)}</td><td class="px-6 py-4">${formatDate(r.fechaEvaluacion)}</td><td class="px-6 py-4">${r.diagnostico||'N/A'}</td><td class="px-6 py-4">${r.medicoNombre||'N/A'} (Mat: ${r.medicoMatricula||'N/A'})</td><td classD="px-6 py-4"><button onclick="openFormulario('${d.id}', 'antecedentes')" class="text-blue-600 hover:underline">Ver</button></td></tr>`; }); html += `</tbody></table></div>`; container.innerHTML = html; } }
+            
+            if (snapshot.empty) { 
+                container.innerHTML = '<p class="text-center p-4">No se encontraron antecedentes.</p>'; 
+                allDataCache[tableId] = [];
+            } else { 
+                // Prepara el HTML de la tabla, pero la data se guarda en el caché
+                container.innerHTML = `<div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-xs text-gray-700 uppercase bg-gray-50"><th class="px-6 py-3">Afiliado</th><th class="px-6 py-3">Empleado</th><th class="px-6 py-3">Dep.</th><th class="px-6 py-3">Fecha Ev.</th><th class="px-6 py-3">Diagnóstico</th><th class="px-6 py-3">Médico</th><th class="px-6 py-3">Acción</th></tr></thead><tbody id="antecedentes-table"></tbody></table></div>`;
+                allDataCache[tableId] = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
+            }
+            paginationState[tableId] = { currentPage: 1, rowsPerPage: ROWS_PER_PAGE };
+            renderPaginatedTable(tableId);
+        }
+
         async function filtrarPresentarse() {
+            const tableId = 'presentarse-table';
             const fecha = document.getElementById('fecha-presentarse').value,
                 unidad = document.getElementById('unidad-presentarse').value,
-                tableBody = document.getElementById('presentarse-table');
+                tableBody = document.getElementById(tableId);
             if (!fecha) {
                 tableBody.innerHTML = '<tr><td colspan="9" class="text-center p-4 text-red-500">Seleccione una fecha.</td></tr>';
+                allDataCache[tableId] = [];
+                renderPaginatedTable(tableId);
                 return;
             }
 
@@ -1571,22 +1712,10 @@
 
             const q = query(collection(db, "incidentes"), ...conditions),
                 snapshot = await getDocs(q);
-            tableBody.innerHTML = '';
-            if (snapshot.empty) {
-                tableBody.innerHTML = '<tr><td colspan="9" class="text-center p-4">No hay personal a presentarse en esta fecha.</td></tr>';
-            } else {
-                snapshot.forEach(doc => {
-                    const inc = doc.data();
-                    const finLicencia = inc.reconocimiento.altaDesde;
-                    const debePresentarse = fecha;
-
-                    const isEditable = selectedRole === 'personal' && currentUserUnidad !== 'TODAS' && inc.unidad === currentUserUnidad;
-                    const presento = isEditable ? `<input type="checkbox" onchange="updateAsistencia('${doc.id}','sePresento',this.checked)" ${inc.asistencia?.sePresento ? 'checked' : ''}>` : (inc.asistencia?.sePresento ? 'Sí' : 'No');
-                    const comunico = isEditable ? `<input type="checkbox" onchange="updateAsistencia('${doc.id}','seComunico',this.checked)" ${inc.asistencia?.seComunico ? 'checked' : ''}>` : (inc.asistencia?.seComunico ? 'Sí' : 'No');
-                    const obs = isEditable ? `<textarea oninput="updateAsistencia('${doc.id}','observaciones',this.value)" class="w-full border p-1">${inc.asistencia?.observaciones || ''}</textarea>` : `<p>${inc.asistencia?.observaciones || ''}</p>`;
-                    tableBody.innerHTML += `<tr class="bg-white border-b"><td class="px-6 py-4">${inc.afiliado}</td><td class="px-6 py-4">${inc.empleado}</td><td class="px-6 py-4">${getUnidadTag(inc.unidad)}</td><td class="px-6 py-4">${inc.unidad}</td><td class="px-6 py-4">${formatDate(finLicencia)}</td><td class="px-6 py-4">${formatDate(debePresentarse)}</td><td class="px-6 py-4">${presento}</td><td class="px-6 py-4">${comunico}</td><td class="px-6 py-4">${obs}</td></tr>`;
-                });
-            }
+            
+            allDataCache[tableId] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            paginationState[tableId] = { currentPage: 1, rowsPerPage: ROWS_PER_PAGE };
+            renderPaginatedTable(tableId);
         }
         
         function openAvisosFechaModal() { document.getElementById('avisos-fecha-modal').classList.add('flex'); document.getElementById('avisos-fecha-modal').classList.remove('hidden'); }
@@ -1594,20 +1723,31 @@
         
         // --- INICIO DE LA CORRECCIÓN ---
         async function searchAvisosPorFecha() { 
-            currentAvisosSearchResult = [];
+            const tableId = 'avisos-fecha-table'; // ID de la tbody
+            currentAvisosSearchResult = []; // Mantener para exportar
             const fechaDesde = document.getElementById('search-fecha-aviso-desde').value;
             const fechaHasta = document.getElementById('search-fecha-aviso-hasta').value;
             const encuadraFiltro = document.getElementById('search-encuadra-aviso').value;
             const resultsDiv = document.getElementById('avisos-fecha-results');
+            const tableBody = document.getElementById(tableId);
+            if (!tableBody) return; // Salir si la tabla no está
+
             if (!fechaDesde || !fechaHasta) {
-                resultsDiv.innerHTML = '<p class="text-center text-red-500">Por favor, seleccione un período de fechas completo.</p>';
+                resultsDiv.querySelector('p.text-center').textContent = 'Por favor, seleccione un período de fechas completo.';
+                tableBody.innerHTML = '';
+                allDataCache[tableId] = [];
+                renderPaginatedTable(tableId);
                 return;
             }
              if (fechaDesde > fechaHasta) {
-                resultsDiv.innerHTML = '<p class="text-center text-red-500">La fecha "Desde" no puede ser posterior a la fecha "Hasta".</p>';
+                resultsDiv.querySelector('p.text-center').textContent = 'La fecha "Desde" no puede ser posterior a la fecha "Hasta".';
+                tableBody.innerHTML = '';
+                allDataCache[tableId] = [];
+                renderPaginatedTable(tableId);
                 return;
             }
-            resultsDiv.innerHTML = '<p class="text-center">Buscando...</p>';
+            resultsDiv.querySelector('p.text-center').textContent = 'Buscando...';
+            tableBody.innerHTML = '';
             
             let conditions = [];
             
@@ -1644,55 +1784,17 @@
             });
             
             if (filteredDocs.length === 0) { 
-                resultsDiv.innerHTML = '<p class="text-center">No se encontraron avisos para este período y filtro.</p>'; 
+                resultsDiv.querySelector('p.text-center').textContent = 'No se encontraron avisos para este período y filtro.';
                 currentAvisosSearchResult = []; 
-                return; 
-            } 
+                allDataCache[tableId] = [];
+            } else {
+                resultsDiv.querySelector('p.text-center').textContent = ''; // Ocultar mensaje
+                currentAvisosSearchResult = filteredDocs; // Guardar para exportar
+                allDataCache[tableId] = filteredDocs; // Guardar para paginación
+            }
             
-            currentAvisosSearchResult = filteredDocs;
-
-            let html = '<div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-xs text-gray-700 uppercase bg-gray-50"><th class="px-4 py-2">Afiliado</th><th class="px-4 py-2">Empleado</th><th class="px-4 py-2">Dep.</th><th class="px-4 py-2">Unidad</th><th class="px-4 py-2">Fecha</th><th class="px-4 py-2">Estado</th><th class="px-4 py-2">Encuadre</th></tr></thead><tbody>'; 
-            
-            // Usar Promise.all para procesar todas las filas en paralelo
-            const htmlRowsPromises = filteredDocs.map(async (aviso) => {
-                const statusClass = aviso.status === 'Completado' ? 'text-green-600' : 'text-yellow-600';
-                let encuadreHtml = 'N/A'; // Valor por defecto
-
-                if (aviso.status === 'Completado') {
-                    if (aviso.encuadra) {
-                        // Caso 1: El dato está en el aviso (ideal)
-                        encuadreHtml = aviso.encuadra;
-                    } else {
-                        // Caso 2: El dato no está. Buscar en el incidente asociado.
-                        // Usamos el aviso.id (que ahora tenemos) para encontrar el incidente.
-                        try {
-                            const qIncidente = query(collection(db, "incidentes"), where("avisoId", "==", aviso.id));
-                            const incidenteSnap = await getDocs(qIncidente);
-                            if (!incidenteSnap.empty) {
-                                const incidente = incidenteSnap.docs[0].data();
-                                if (incidente.reconocimiento && incidente.reconocimiento.encuadra) {
-                                    encuadreHtml = incidente.reconocimiento.encuadra;
-                                    
-                                    // Opcional: Auto-corregir el aviso en Firestore (sin esperar)
-                                    const avisoDocRef = doc(db, "avisos", aviso.id);
-                                    updateDoc(avisoDocRef, { encuadra: encuadreHtml }).catch(err => console.error("Error auto-correcting aviso:", err));
-                                }
-                            }
-                            // Si no se encuentra, encuadreHtml permanece 'N/A'
-                        } catch (err) {
-                            console.error("Error fetching incidente for encuadre:", err);
-                            // Si hay error, permanece 'N/A'
-                        }
-                    }
-                }
-                
-                return `<tr class="bg-white border-b"><td class="px-4 py-2">${aviso.afiliado || 'N/A'}</td><td class="px-4 py-2">${aviso.empleado}</td><td class="px-4 py-2">${getUnidadTag(aviso.unidad)}</td><td class="px-4 py-2">${aviso.unidad}</td><td class="px-4 py-2">${formatDate(aviso.fecha)}</td><td class="px-4 py-2 font-semibold ${statusClass}">${aviso.status}</td><td class="px-4 py-2">${encuadreHtml}</td></tr>`;
-            });
-
-            const htmlRows = await Promise.all(htmlRowsPromises);
-            html += htmlRows.join('');
-            html += '</tbody></table></div>'; 
-            resultsDiv.innerHTML = html; 
+            paginationState[tableId] = { currentPage: 1, rowsPerPage: ROWS_PER_PAGE };
+            renderPaginatedTable(tableId);
         }
         // --- FIN DE LA CORRECCIÓN ---
 
@@ -1778,36 +1880,23 @@
         }
 
         function listenToProfesionalesCollection() {
+            const tableId = 'profesionales-table';
+            const baseTitle = 'Gestión de Profesionales';
+            const viewHeader = document.querySelector('#profesionales-view h2');
+
             unsubscribeProfesionales = onSnapshot(collection(db, "profesionales"), (snapshot) => {
-                const tableBody = document.getElementById('profesionales-table');
-                tableBody.innerHTML = '';
-                if (snapshot.empty) {
-                    // CAMBIO: Colspan actualizado a 4
-                    tableBody.innerHTML = '<tr><td colspan="4" class="text-center p-4">No hay profesionales registrados. Se agregarán automáticamente al completar cartas médicas.</td></tr>';
-                    return;
+                const totalCount = snapshot.size;
+                const titleWithCount = `${baseTitle} (${totalCount})`;
+                viewHeader.textContent = titleWithCount;
+                if (!document.getElementById('profesionales-view').classList.contains('hidden')) {
+                    document.getElementById('view-title').textContent = titleWithCount;
                 }
-                snapshot.forEach(doc => {
-                    const prof = doc.data();
-                    const rowClass = prof.verificado ? 'bg-green-100 text-green-900' : 'bg-white';
-                    const textClass = prof.verificado ? 'font-medium' : '';
-                    tableBody.innerHTML += `
-                        <tr class="${rowClass} border-b hover:bg-gray-50">
-                            <td class="px-6 py-4 ${textClass}">${prof.matricula}</td>
-                            <td class="px-6 py-4 ${textClass}">${prof.nombre}</td>
-                            <td class="px-6 py-4">
-                                <input type="checkbox" ${prof.verificado ? 'checked' : ''} onchange="toggleVerificado('${prof.matricula}')" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                            </td>
-                            <!-- CELDA OBSERVACIONES MODIFICADA -->
-                            <td class="px-6 py-4">
-                                <textarea
-                                    onblur="updateProfesionalObservaciones('${prof.matricula}', this.value)"
-                                    onkeydown="handleObsTextareaKeydown(event, '${prof.matricula}', this.value)"
-                                    class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg p-2"
-                                    rows="2"
-                                    placeholder="Añadir nota...">${prof.observaciones || ''}</textarea>
-                            </td>
-                        </tr>`;
-                });
+
+                allDataCache[tableId] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (!paginationState[tableId]) {
+                    paginationState[tableId] = { currentPage: 1, rowsPerPage: ROWS_PER_PAGE };
+                }
+                renderPaginatedTable(tableId);
             });
         }
 
@@ -1849,20 +1938,283 @@
         }
 
         function listenToActivityLog() {
+            const tableId = 'registro-table';
+            const baseTitle = 'Registro de Actividad del Sistema';
+            const viewHeader = document.querySelector('#registro-view h2');
+            
             const q = query(collection(db, "activityLog"), orderBy("timestamp", "desc"));
             unsubscribeRegistro = onSnapshot(q, (snapshot) => {
-                const tableBody = document.getElementById('registro-table'); tableBody.innerHTML = '';
-                if (snapshot.empty) { tableBody.innerHTML = '<tr><td colspan="6" class="text-center p-4">No hay actividad registrada.</td></tr>'; return; }
-                snapshot.forEach(doc => { 
-                    const log = doc.data(); 
-                    const date = log.timestamp.toDate(); 
-                    const formattedDate = date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + date.toLocaleTimeString('es-AR');
-                    tableBody.innerHTML += `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-6 py-4 text-gray-500 text-xs">${formattedDate}</td><td class="px-6 py-4">${log.userAfiliado}</td><td class="px-6 py-4 font-medium">${log.userName}</td><td class="px-6 py-4">${log.action}</td><td class="px-6 py-4 capitalize">${log.userRole}</td><td class="px-6 py-4 text-sm">${log.description}</td></tr>`; 
-                });
+                const totalCount = snapshot.size;
+                const titleWithCount = `${baseTitle} (${totalCount})`;
+                viewHeader.textContent = titleWithCount;
+                if (!document.getElementById('registro-view').classList.contains('hidden')) {
+                    document.getElementById('view-title').textContent = titleWithCount;
+                }
+
+                allDataCache[tableId] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                if (!paginationState[tableId]) {
+                    paginationState[tableId] = { currentPage: 1, rowsPerPage: ROWS_PER_PAGE };
+                }
+                renderPaginatedTable(tableId);
             });
         }
         
+        // --- INICIO: FUNCIONES DE PAGINACIÓN Y RENDERIZADO ---
+
+        // El 'filterTable' ahora solo necesita saber qué tabla re-renderizar
+        function filterTable(tableId) {
+            if (paginationState[tableId]) {
+                paginationState[tableId].currentPage = 1; // Resetea a la página 1 al filtrar
+            }
+            renderPaginatedTable(tableId);
+        }
+        
+        function changePage(tableId, direction) {
+            const state = paginationState[tableId];
+            if (!state) return;
+            
+            const newPage = state.currentPage + direction;
+            const totalRows = (allDataCache[tableId] || []).length; // Usa el caché completo
+            const totalPages = Math.ceil(totalRows / state.rowsPerPage);
+
+            if (newPage >= 1 && newPage <= totalPages) {
+                state.currentPage = newPage;
+                renderPaginatedTable(tableId);
+            }
+        }
+
+        function renderPaginatedTable(tableId) {
+            const tableBody = document.getElementById(tableId);
+            const controlsContainer = document.getElementById(`${tableId}-pagination`);
+            if (!tableBody || !controlsContainer) return;
+
+            // 1. Obtener la data y el estado
+            const allData = allDataCache[tableId] || [];
+            const state = paginationState[tableId];
+            if (!state) return;
+
+            // 2. Definir los parámetros de filtrado y renderizado (específicos de cada tabla)
+            let searchInputId, columnsToSearch, rowRenderer, emptyMessage, colspan;
+            switch (tableId) {
+                case 'usuarios-table':
+                    searchInputId = 'search-usuarios';
+                    columnsToSearch = [ (item) => item.afiliado, (item) => item.nombreCompleto ];
+                    rowRenderer = getUsuarioRowHtml;
+                    emptyMessage = 'No hay usuarios.'; colspan = 4;
+                    break;
+                case 'avisos-pendientes-table':
+                    searchInputId = 'search-avisos-pendientes';
+                    columnsToSearch = [ (item) => item.afiliado, (item) => item.empleado, (item) => item.unidad ];
+                    rowRenderer = (item) => getAvisoRowHtml(item, true);
+                    emptyMessage = 'No hay avisos pendientes.'; colspan = 6;
+                    break;
+                case 'avisos-visados-table':
+                    searchInputId = 'search-avisos-visados';
+                    columnsToSearch = [ (item) => item.afiliado, (item) => item.empleado, (item) => item.unidad, (item) => item.diagnostico ];
+                    rowRenderer = (item) => getAvisoRowHtml(item, false);
+                    emptyMessage = 'No hay avisos visados.'; colspan = 7;
+                    break;
+                case 'pendientes-table':
+                    searchInputId = 'search-pendientes';
+                    columnsToSearch = [ (item) => item.afiliado, (item) => item.empleado ];
+                    rowRenderer = (item) => getIncidenteRowHtml(item, true);
+                    emptyMessage = 'No hay incidentes pendientes.'; colspan = 6;
+                    break;
+                case 'completados-table':
+                    searchInputId = 'search-completados';
+                    columnsToSearch = [ (item) => item.afiliado, (item) => item.empleado ];
+                    rowRenderer = (item) => getIncidenteRowHtml(item, false);
+                    emptyMessage = 'No hay incidentes completados.'; colspan = 6;
+                    break;
+                case 'evaluados-table':
+                    searchInputId = 'search-evaluados';
+                    columnsToSearch = [ (item) => item.afiliado, (item) => item.empleado, (item) => item.reconocimiento?.encuadra ];
+                    rowRenderer = getEvaluadoRowHtml;
+                    emptyMessage = 'No hay evaluados para esta fecha.'; colspan = 7;
+                    break;
+                case 'antecedentes-table':
+                    searchInputId = 'search-antecedentes';
+                    columnsToSearch = [ (item) => item.afiliado, (item) => item.empleado, (item) => item.reconocimiento?.diagnostico, (item) => item.reconocimiento?.medicoNombre ];
+                    rowRenderer = getAntecedenteRowHtml;
+                    emptyMessage = 'No se encontraron antecedentes.'; colspan = 7;
+                    break;
+                case 'profesionales-table':
+                    searchInputId = 'search-profesionales';
+                    columnsToSearch = [ (item) => item.matricula, (item) => item.nombre, (item) => item.observaciones ];
+                    rowRenderer = getProfesionalRowHtml;
+                    emptyMessage = 'No hay profesionales.'; colspan = 4;
+                    break;
+                case 'registro-table':
+                    searchInputId = 'search-registro';
+                    columnsToSearch = [ (item) => item.userAfiliado, (item) => item.userName, (item) => item.action, (item) => item.description ];
+                    rowRenderer = getActivityLogRowHtml;
+                    emptyMessage = 'No hay actividad registrada.'; colspan = 6;
+                    break;
+                case 'presentarse-table':
+                    searchInputId = 'search-presentarse';
+                    columnsToSearch = [ (item) => item.afiliado, (item) => item.empleado, (item) => item.unidad ];
+                    rowRenderer = (item) => getPresentarseRowHtml(item); // getPresentarseRowHtml se encargará de la lógica de 'isEditable'
+                    emptyMessage = 'No hay personal a presentarse.'; colspan = 9;
+                    break;
+                case 'avisos-fecha-table': // Modal de búsqueda por fecha
+                    searchInputId = null; // No hay filtro en este modal
+                    columnsToSearch = [];
+                    rowRenderer = getAvisoFechaRowHtml;
+                    emptyMessage = 'No se encontraron avisos.'; colspan = 7;
+                    break;
+                default:
+                    return; // No renderizar si la tabla no está configurada
+            }
+
+            // 3. Aplicar filtro
+            const filterInput = searchInputId ? document.getElementById(searchInputId) : null;
+            const filter = filterInput ? filterInput.value.toUpperCase() : '';
+            
+            const filteredData = allData.filter(item => {
+                if (filter === '') return true;
+                return columnsToSearch.some(getter => {
+                    const value = getter(item);
+                    return value && value.toString().toUpperCase().includes(filter);
+                });
+            });
+
+            // 4. Calcular paginación
+            const totalRows = filteredData.length;
+            const totalPages = Math.ceil(totalRows / state.rowsPerPage);
+            if (state.currentPage > totalPages && totalPages > 0) {
+                state.currentPage = totalPages; // Ajusta si la página actual es inválida
+            }
+            if (state.currentPage === 0 && totalPages > 0) {
+                state.currentPage = 1; // Asegura que la página sea al menos 1
+            }
+
+            const startIndex = (state.currentPage - 1) * state.rowsPerPage;
+            const endIndex = startIndex + state.rowsPerPage;
+            const pageData = filteredData.slice(startIndex, endIndex);
+
+            // 5. Renderizar filas
+            tableBody.innerHTML = '';
+            if (pageData.length === 0) {
+                tableBody.innerHTML = `<tr><td colspan="${colspan}" class="text-center p-4">${emptyMessage}</td></tr>`;
+            } else {
+                pageData.forEach(item => {
+                    tableBody.innerHTML += rowRenderer(item);
+                });
+            }
+
+            // 6. Renderizar controles de paginación
+            controlsContainer.innerHTML = '';
+            if (totalPages > 1) {
+                controlsContainer.innerHTML = `
+                    <button onclick="changePage('${tableId}', -1)" ${state.currentPage === 1 ? 'disabled' : ''}>
+                        <i class="fas fa-arrow-left"></i>
+                    </button>
+                    <span>Página ${state.currentPage} de ${totalPages} (${totalRows} registros)</span>
+                    <button onclick="changePage('${tableId}', 1)" ${state.currentPage === totalPages ? 'disabled' : ''}>
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                `;
+            } else {
+                controlsContainer.innerHTML = `<span>${totalRows} registros</span>`;
+            }
+        }
+
+        // --- Funciones de renderizado de filas ---
+
+        function getUsuarioRowHtml(user) {
+            const roles = Array.isArray(user.roles) ? user.roles.join(', ') : (user.role || 'N/A');
+            return `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-6 py-4">${user.afiliado}</td><td class="px-6 py-4">${user.nombreCompleto}</td><td class="px-6 py-4 capitalize">${roles}</td><td class="px-6 py-4 space-x-2"><button onclick="openUsuarioModal('${user.afiliado}')" class="text-blue-600 hover:text-blue-800" title="Editar"><i class="fas fa-edit"></i></button><button onclick="resetPassword('${user.afiliado}')" class="text-yellow-600 hover:text-yellow-800" title="Blanquear Contraseña"><i class="fas fa-key"></i></button><button onclick="deleteUser('${user.afiliado}')" class="text-red-600 hover:text-red-800" title="Eliminar"><i class="fas fa-trash"></i></button></td></tr>`;
+        }
+
+        function getAvisoRowHtml(aviso, isPending) {
+            let actionsHtml = '<td class="px-6 py-4 space-x-2 text-right">';
+            if (isPending) {
+                const canEdit = (selectedRole === 'administrador') || (selectedRole === 'personal');
+                const canDelete = selectedRole === 'administrador';
+                if (canEdit) actionsHtml += `<button onclick="openAvisoModal('${aviso.id}')" class="text-blue-600 hover:text-blue-800" title="Editar"><i class="fas fa-edit"></i></button>`;
+                if (canDelete) actionsHtml += `<button onclick="deleteAviso('${aviso.id}')" class="text-red-600 hover:text-red-800" title="Eliminar"><i class="fas fa-trash"></i></button>`;
+            } else { // Visados
+                if (aviso.incidenteId) {
+                    actionsHtml += `<button onclick="openFormulario('${aviso.incidenteId}', 'avisos-visados', true)" class="text-gray-500 hover:text-blue-600" title="Ver Carta Médica"><i class="fas fa-eye"></i></button>`;
+                }
+                if (selectedRole === 'administrador') {
+                    actionsHtml += `<button onclick="openAvisoModal('${aviso.id}')" class="text-blue-600 hover:text-blue-800" title="Editar"><i class="fas fa-edit"></i></button>`;
+                    actionsHtml += `<button onclick="deleteAviso('${aviso.id}')" class="text-red-600 hover:text-red-800" title="Eliminar"><i class="fas fa-trash"></i></button>`;
+                }
+            }
+            actionsHtml += '</td>';
+            const diagnosticoColumn = isPending ? '' : `<td class="px-6 py-4 text-xs">${aviso.diagnostico || 'N/A'}</td>`;
+            return `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-6 py-4">${aviso.afiliado || 'N/A'}</td><td class="px-6 py-4">${aviso.empleado}</td><td class="px-6 py-4">${getUnidadTag(aviso.unidad)}</td><td class="px-6 py-4">${formatDate(aviso.fecha)}</td><td class="px-6 py-4">${aviso.unidad}</td>${diagnosticoColumn}${actionsHtml}</tr>`;
+        }
+
+        function getIncidenteRowHtml(incidente, isPending) {
+            const dateField = formatDate(isPending ? incidente.solicitudFecha : (incidente.reconocimiento?.fechaEvaluacion));
+            const btnText = isPending ? 'Evaluar' : 'Ver/Editar';
+            const view = isPending ? 'pendientes' : 'completados';
+            return `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-6 py-4">${incidente.id || 'N/A'}</td><td class="px-6 py-4">${incidente.afiliado || 'N/A'}</td><td class="px-6 py-4">${incidente.empleado}</td><td class="px-6 py-4">${getUnidadTag(incidente.unidad)}</td><td class="px-6 py-4">${dateField}</td><td class="px-6 py-4"><button onclick="openFormulario('${incidente.id}', '${view}')" class="text-blue-600 hover:underline">${btnText}</button></td></tr>`;
+        }
+
+        function getEvaluadoRowHtml(inc) {
+            return `<tr class="bg-white border-b"><td class="px-6 py-4">${inc.id}</td><td class="px-6 py-4">${inc.afiliado}</td><td class="px-6 py-4">${inc.empleado}</td><td class="px-6 py-4">${getUnidadTag(inc.unidad)}</td><td class="px-6 py-4">${formatDate(inc.reconocimiento.fechaEvaluacion)}</td><td class="px-6 py-4">${inc.reconocimiento.encuadra}</td><td class="px-6 py-4"><button onclick="openFormulario('${inc.id}', 'evaluados')" class="text-blue-600 hover:underline">Ver</button></td></tr>`;
+        }
+        
+        function getAntecedenteRowHtml(i) {
+            const r = i.reconocimiento;
+            return `<tr class="bg-white border-b"><td class="px-6 py-4">${i.afiliado}</td><td class="px-6 py-4">${i.empleado}</td><td class="px-6 py-4">${getUnidadTag(i.unidad)}</td><td class="px-6 py-4">${formatDate(r.fechaEvaluacion)}</td><td class="px-6 py-4">${r.diagnostico||'N/A'}</td><td class="px-6 py-4">${r.medicoNombre||'N/A'} (Mat: ${r.medicoMatricula||'N/A'})</td><td classD="px-6 py-4"><button onclick="openFormulario('${i.id}', 'antecedentes')" class="text-blue-600 hover:underline">Ver</button></td></tr>`;
+        }
+        
+        function getPresentarseRowHtml(inc) {
+            const finLicencia = inc.reconocimiento.altaDesde;
+            const fechaPresentarse = new Date(finLicencia + 'T00:00:00');
+            fechaPresentarse.setDate(fechaPresentarse.getDate() + 1);
+            const debePresentarse = fechaPresentarse.toISOString().slice(0, 10);
+
+            const isEditable = selectedRole === 'personal' && currentUserUnidad !== 'TODAS' && inc.unidad === currentUserUnidad;
+            const presento = isEditable ? `<input type="checkbox" onchange="updateAsistencia('${inc.id}','sePresento',this.checked)" ${inc.asistencia?.sePresento ? 'checked' : ''}>` : (inc.asistencia?.sePresento ? 'Sí' : 'No');
+            const comunico = isEditable ? `<input type="checkbox" onchange="updateAsistencia('${inc.id}','seComunico',this.checked)" ${inc.asistencia?.seComunico ? 'checked' : ''}>` : (inc.asistencia?.seComunico ? 'Sí' : 'No');
+            const obs = isEditable ? `<textarea oninput="updateAsistencia('${inc.id}','observaciones',this.value)" class="w-full border p-1">${inc.asistencia?.observaciones || ''}</textarea>` : `<p>${inc.asistencia?.observaciones || ''}</p>`;
+            return `<tr class="bg-white border-b"><td class="px-6 py-4">${inc.afiliado}</td><td class="px-6 py-4">${inc.empleado}</td><td class="px-6 py-4">${getUnidadTag(inc.unidad)}</td><td class="px-6 py-4">${inc.unidad}</td><td class="px-6 py-4">${formatDate(finLicencia)}</td><td class="px-6 py-4">${formatDate(debePresentarse)}</td><td class="px-6 py-4">${presento}</td><td class="px-6 py-4">${comunico}</td><td class="px-6 py-4">${obs}</td></tr>`;
+        }
+
+        function getProfesionalRowHtml(prof) {
+            const rowClass = prof.verificado ? 'bg-green-100 text-green-900' : 'bg-white';
+            const textClass = prof.verificado ? 'font-medium' : '';
+            return `
+                <tr class="${rowClass} border-b hover:bg-gray-50">
+                    <td class="px-6 py-4 ${textClass}">${prof.matricula}</td>
+                    <td class="px-6 py-4 ${textClass}">${prof.nombre}</td>
+                    <td class="px-6 py-4">
+                        <input type="checkbox" ${prof.verificado ? 'checked' : ''} onchange="toggleVerificado('${prof.matricula}')" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                    </td>
+                    <td class="px-6 py-4">
+                        <textarea
+                            onblur="updateProfesionalObservaciones('${prof.matricula}', this.value)"
+                            onkeydown="handleObsTextareaKeydown(event, '${prof.matricula}', this.value)"
+                            class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-xs rounded-lg p-2"
+                            rows="2"
+                            placeholder="Añadir nota...">${prof.observaciones || ''}</textarea>
+                    </td>
+                </tr>`;
+        }
+
+        function getActivityLogRowHtml(log) {
+            const date = log.timestamp.toDate(); 
+            const formattedDate = date.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' }) + ' ' + date.toLocaleTimeString('es-AR');
+            return `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-6 py-4 text-gray-500 text-xs">${formattedDate}</td><td class="px-6 py-4">${log.userAfiliado}</td><td class="px-6 py-4 font-medium">${log.userName}</td><td class="px-6 py-4">${log.action}</td><td class="px-6 py-4 capitalize">${log.userRole}</td><td class="px-6 py-4 text-sm">${log.description}</td></tr>`; 
+        }
+
+        function getAvisoFechaRowHtml(aviso) {
+            const statusClass = aviso.status === 'Completado' ? 'text-green-600' : 'text-yellow-600';
+            // Nota: La lógica para obtener 'encuadre' si falta ya no se puede hacer aquí sin async
+            // Se asume que la data está como está en el caché.
+            const encuadreHtml = aviso.encuadre || (aviso.status === 'Completado' ? 'N/A' : '');
+            return `<tr class="bg-white border-b"><td class="px-4 py-2">${aviso.afiliado || 'N/A'}</td><td class="px-4 py-2">${aviso.empleado}</td><td class="px-4 py-2">${getUnidadTag(aviso.unidad)}</td><td class="px-4 py-2">${aviso.unidad}</td><td class="px-4 py-2">${formatDate(aviso.fecha)}</td><td class="px-4 py-2 font-semibold ${statusClass}">${aviso.status}</td><td class="px-4 py-2">${encuadreHtml}</td></tr>`;
+        }
+
+        // --- FIN: FUNCIONES DE PAGINACIÓN ---
+        
         // CAMBIO: filterTable ahora puede leer el valor de inputs de texto o textareas
+        /*
         function filterTable(inputId, tableId, columnsToSearch) { 
             const input = document.getElementById(inputId), filter = input.value.toUpperCase(), table = document.getElementById(tableId), tr = table.getElementsByTagName("tr"); 
             for (let i = 0; i < tr.length; i++) { 
@@ -1889,6 +2241,7 @@
                 } 
             } 
         }
+        */
         
         function sortTable(tableId, colIndex) {
             const table = document.getElementById(tableId);
@@ -1946,8 +2299,19 @@
             document.getElementById('solicitud-fecha').value = today;
             document.getElementById('search-fecha-aviso-desde').value = today;
             document.getElementById('search-fecha-aviso-hasta').value = today;
-            // CAMBIO: Añadida la nueva función al objeto window
-            Object.assign(window, { selectRole, goBackToRoleSelection, continueLoginPersonal, goBackToLogin, logout, showView, openUsuarioModal, closeUsuarioModal, precargarDatosUsuario, resetPassword, deleteUser, handleFileUpload, openAvisoModal, closeAvisoModal, precargarDatosAfiliado, deleteAviso, openFormulario, updateAsistencia, filtrarEvaluadosPorFecha, filtrarPresentarse, searchAntecedentes, openChangePasswordModal, closeChangePasswordModal, filterTable, openAvisosFechaModal, closeAvisosFechaModal, searchAvisosPorFecha, exportAvisosToXLS, toggleVerificado, sortTable, synchronizeAndListenProfesionales, listenToProfesionalesCollection, fetchMedicoInfo, updateProfesionalObservaciones, handleObsTextareaKeydown }); 
+            // CAMBIO: Añadidas las nuevas funciones al objeto window
+            Object.assign(window, { 
+                selectRole, goBackToRoleSelection, continueLoginPersonal, goBackToLogin, logout, 
+                showView, openUsuarioModal, closeUsuarioModal, precargarDatosUsuario, resetPassword, deleteUser, 
+                handleFileUpload, openAvisoModal, closeAvisoModal, precargarDatosAfiliado, deleteAviso, 
+                openFormulario, updateAsistencia, filtrarEvaluadosPorFecha, filtrarPresentarse, searchAntecedentes, 
+                openChangePasswordModal, closeChangePasswordModal, 
+                filterTable, // Ahora es el trigger de repaginado
+                changePage, // Nueva función de paginación
+                openAvisosFechaModal, closeAvisosFechaModal, searchAvisosPorFecha, exportAvisosToXLS, 
+                toggleVerificado, sortTable, synchronizeAndListenProfesionales, listenToProfesionalesCollection, 
+                fetchMedicoInfo, updateProfesionalObservaciones, handleObsTextareaKeydown 
+            }); 
         };
     </script>
 </body>
