@@ -1591,6 +1591,8 @@
         
         function openAvisosFechaModal() { document.getElementById('avisos-fecha-modal').classList.add('flex'); document.getElementById('avisos-fecha-modal').classList.remove('hidden'); }
         function closeAvisosFechaModal() { document.getElementById('avisos-fecha-modal').classList.add('hidden'); document.getElementById('avisos-fecha-modal').classList.remove('flex'); }
+        
+        // --- INICIO DE LA CORRECCIÓN ---
         async function searchAvisosPorFecha() { 
             currentAvisosSearchResult = [];
             const fechaDesde = document.getElementById('search-fecha-aviso-desde').value;
@@ -1607,30 +1609,92 @@
             }
             resultsDiv.innerHTML = '<p class="text-center">Buscando...</p>';
             
-            let conditions = [where("fecha", ">=", fechaDesde), where("fecha", "<=", fechaHasta)];
-            if (encuadraFiltro && encuadraFiltro !== 'TODOS') {
-                conditions.push(where("encuadra", "==", encuadraFiltro));
+            let conditions = [];
+            
+            if (selectedRole === 'personal' && currentUserUnidad !== 'TODAS') {
+                conditions.push(where("unidad", "==", currentUserUnidad));
+            } else {
+                conditions.push(where("fecha", ">=", fechaDesde));
+                conditions.push(where("fecha", "<=", fechaHasta));
             }
 
             const q = query(collection(db, "avisos"), ...conditions);
             const snapshot = await getDocs(q); 
             
-            if (snapshot.empty) { 
+            // Obtenemos los documentos Y SUS IDs
+            const allDocs = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+            // 2. Filtramos los resultados en JavaScript
+            const filteredDocs = allDocs.filter(aviso => {
+                const isPersonal = selectedRole === 'personal' && currentUserUnidad !== 'TODAS';
+                
+                if (isPersonal) {
+                    if (aviso.fecha < fechaDesde || aviso.fecha > fechaHasta) {
+                        return false;
+                    }
+                }
+                
+                if (encuadraFiltro && encuadraFiltro !== 'TODOS') {
+                    if (aviso.encuadra !== encuadraFiltro) {
+                        return false;
+                    }
+                }
+                
+                return true;
+            });
+            
+            if (filteredDocs.length === 0) { 
                 resultsDiv.innerHTML = '<p class="text-center">No se encontraron avisos para este período y filtro.</p>'; 
+                currentAvisosSearchResult = []; 
                 return; 
             } 
             
-            currentAvisosSearchResult = snapshot.docs.map(doc => doc.data());
+            currentAvisosSearchResult = filteredDocs;
 
             let html = '<div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-xs text-gray-700 uppercase bg-gray-50"><th class="px-4 py-2">Afiliado</th><th class="px-4 py-2">Empleado</th><th class="px-4 py-2">Dep.</th><th class="px-4 py-2">Unidad</th><th class="px-4 py-2">Fecha</th><th class="px-4 py-2">Estado</th><th class="px-4 py-2">Encuadre</th></tr></thead><tbody>'; 
-            snapshot.forEach(doc => { 
-                const aviso = doc.data(); 
-                const statusClass = aviso.status === 'Completado' ? 'text-green-600' : 'text-yellow-600'; 
-                html += `<tr class="bg-white border-b"><td class="px-4 py-2">${aviso.afiliado || 'N/A'}</td><td class="px-4 py-2">${aviso.empleado}</td><td class="px-4 py-2">${getUnidadTag(aviso.unidad)}</td><td class="px-4 py-2">${aviso.unidad}</td><td class="px-4 py-2">${formatDate(aviso.fecha)}</td><td class="px-4 py-2 font-semibold ${statusClass}">${aviso.status}</td><td class="px-4 py-2">${aviso.encuadre || 'N/A'}</td></tr>`; 
-            }); 
+            
+            // Usar Promise.all para procesar todas las filas en paralelo
+            const htmlRowsPromises = filteredDocs.map(async (aviso) => {
+                const statusClass = aviso.status === 'Completado' ? 'text-green-600' : 'text-yellow-600';
+                let encuadreHtml = 'N/A'; // Valor por defecto
+
+                if (aviso.status === 'Completado') {
+                    if (aviso.encuadra) {
+                        // Caso 1: El dato está en el aviso (ideal)
+                        encuadreHtml = aviso.encuadra;
+                    } else {
+                        // Caso 2: El dato no está. Buscar en el incidente asociado.
+                        // Usamos el aviso.id (que ahora tenemos) para encontrar el incidente.
+                        try {
+                            const qIncidente = query(collection(db, "incidentes"), where("avisoId", "==", aviso.id));
+                            const incidenteSnap = await getDocs(qIncidente);
+                            if (!incidenteSnap.empty) {
+                                const incidente = incidenteSnap.docs[0].data();
+                                if (incidente.reconocimiento && incidente.reconocimiento.encuadra) {
+                                    encuadreHtml = incidente.reconocimiento.encuadra;
+                                    
+                                    // Opcional: Auto-corregir el aviso en Firestore (sin esperar)
+                                    const avisoDocRef = doc(db, "avisos", aviso.id);
+                                    updateDoc(avisoDocRef, { encuadra: encuadreHtml }).catch(err => console.error("Error auto-correcting aviso:", err));
+                                }
+                            }
+                            // Si no se encuentra, encuadreHtml permanece 'N/A'
+                        } catch (err) {
+                            console.error("Error fetching incidente for encuadre:", err);
+                            // Si hay error, permanece 'N/A'
+                        }
+                    }
+                }
+                
+                return `<tr class="bg-white border-b"><td class="px-4 py-2">${aviso.afiliado || 'N/A'}</td><td class="px-4 py-2">${aviso.empleado}</td><td class="px-4 py-2">${getUnidadTag(aviso.unidad)}</td><td class="px-4 py-2">${aviso.unidad}</td><td class="px-4 py-2">${formatDate(aviso.fecha)}</td><td class="px-4 py-2 font-semibold ${statusClass}">${aviso.status}</td><td class="px-4 py-2">${encuadreHtml}</td></tr>`;
+            });
+
+            const htmlRows = await Promise.all(htmlRowsPromises);
+            html += htmlRows.join('');
             html += '</tbody></table></div>'; 
             resultsDiv.innerHTML = html; 
         }
+        // --- FIN DE LA CORRECCIÓN ---
 
         function exportAvisosToXLS() {
             if (currentAvisosSearchResult.length === 0) {
@@ -1645,7 +1709,7 @@
                 'Fecha Aviso': aviso.fecha,
                 'Estado': aviso.status,
                 'Diagnóstico': aviso.diagnostico || 'N/A',
-                'Encuadre': aviso.encuadre || 'N/A'
+                'Encuadre': aviso.encuadre || 'N/A' // La exportación usará el dato 'encuadre' del aviso (podría no estar actualizado si es antiguo)
             }));
 
             const ws = XLSX.utils.json_to_sheet(dataToExport);
@@ -1888,4 +1952,3 @@
     </script>
 </body>
 </html>
-
