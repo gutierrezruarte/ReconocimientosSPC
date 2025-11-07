@@ -2148,13 +2148,76 @@
             const endIndex = startIndex + state.rowsPerPage;
             const pageData = filteredData.slice(startIndex, endIndex);
 
+            // --- INICIO: Lógica de Duplicados de Afiliados ---
+            let afiliadoGetter = null;
+            // Define cómo obtener el 'afiliado' para cada tabla que lo tenga
+            if (tableId.includes('avisos') || tableId.includes('pendientes') || tableId.includes('completados') || tableId.includes('evaluados') || tableId.includes('antecedentes') || tableId.includes('presentarse') || tableId.includes('usuarios')) {
+                afiliadoGetter = (item) => item.afiliado;
+            } else if (tableId === 'registro-table') {
+                afiliadoGetter = (item) => item.userAfiliado;
+            }
+
+            const duplicateAfiliados = new Set();
+            if (afiliadoGetter) {
+                const afiliadoCounts = new Map();
+                // 1. Contar afiliados SÓLO en la página actual
+                for (const item of pageData) {
+                    const afiliado = afiliadoGetter(item);
+                    if (afiliado) {
+                        afiliadoCounts.set(afiliado, (afiliadoCounts.get(afiliado) || 0) + 1);
+                    }
+                }
+                // 2. Crear un Set de los duplicados
+                for (const [afiliado, count] of afiliadoCounts.entries()) {
+                    if (count > 1) {
+                        duplicateAfiliados.add(afiliado);
+                    }
+                }
+            }
+            // --- FIN: Lógica de Duplicados ---
+
+
             // 5. Renderizar filas
             tableBody.innerHTML = '';
             if (pageData.length === 0) {
                 tableBody.innerHTML = `<tr><td colspan="${colspan}" class="text-center p-4">${emptyMessage}</td></tr>`;
             } else {
                 pageData.forEach(item => {
-                    tableBody.innerHTML += rowRenderer(item);
+                    const rowHtml = rowRenderer(item); // Obtener el HTML estándar
+                    let finalRowHtml = rowHtml;
+
+                    // Si esta tabla usa afiliados, chequear si este item es un duplicado
+                    if (afiliadoGetter) {
+                        const afiliado = afiliadoGetter(item);
+                        if (afiliado && duplicateAfiliados.has(afiliado)) {
+                            // Esta es la clase de reemplazo para duplicados
+                            const duplicateClass = 'class="bg-red-200 border-b hover:bg-red-300"';
+                            
+                            // Lista de clases estándar que pueden tener las filas
+                            const classesToReplace = [
+                                'class="bg-white border-b hover:bg-gray-50"', // Clase estándar con hover
+                                'class="bg-white border-b"',                 // Clase estándar sin hover
+                                'class="bg-green-100 text-green-900 border-b hover:bg-gray-50"' // Clase de profesional verificado
+                            ];
+                            
+                            // Reemplaza la primera que coincida
+                            let replaced = false;
+                            for (const classToReplace of classesToReplace) {
+                                if (finalRowHtml.includes(classToReplace)) {
+                                    finalRowHtml = finalRowHtml.replace(classToReplace, duplicateClass);
+                                    replaced = true;
+                                    break; 
+                                }
+                            }
+                            
+                            // Fallback por si la clase 'profesional' no verificada (blanca) no fue detectada
+                            if (!replaced && finalRowHtml.includes('class=" border-b hover:bg-gray-50"')) {
+                                 finalRowHtml = finalRowHtml.replace('class=" border-b hover:bg-gray-50"', duplicateClass);
+                            }
+                        }
+                    }
+                    
+                    tableBody.innerHTML += finalRowHtml;
                 });
             }
 
