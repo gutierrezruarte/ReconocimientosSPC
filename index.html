@@ -622,8 +622,6 @@
                         <textarea id="solicitud-observaciones" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Añadir observaciones sobre la solicitud..."></textarea>
                     </div>
                 </div>
-                <!-- Error message container -->
-                <p id="aviso-error" class="text-red-500 text-sm text-center hidden mt-4"></p>
                 <div class="flex justify-end space-x-4 pt-6 mt-4 border-t">
                     <button type="button" onclick="closeAvisoModal()" class="py-2 px-4 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition">Cancelar</button>
                     <button type="submit" class="py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Guardar Aviso</button>
@@ -1320,58 +1318,19 @@
             document.getElementById('aviso-modal').classList.add('flex');
             document.getElementById('aviso-modal').classList.remove('hidden');
         }
-        function closeAvisoModal() { 
-            document.getElementById('aviso-modal').classList.add('hidden'); 
-            document.getElementById('aviso-modal').classList.remove('flex'); 
-            document.getElementById('aviso-form').reset(); 
-            const errorP = document.getElementById('aviso-error');
-            if (errorP) errorP.classList.add('hidden');
-        }
+        function closeAvisoModal() { document.getElementById('aviso-modal').classList.add('hidden'); document.getElementById('aviso-modal').classList.remove('flex'); document.getElementById('aviso-form').reset(); }
         
         document.getElementById('aviso-form').addEventListener('submit', async function(e) { 
             e.preventDefault(); 
-            const errorP = document.getElementById('aviso-error');
-            errorP.classList.add('hidden'); // Oculta error previo
-
             if (!document.getElementById('empleado-unidad').value) {
-                // alert("Debe seleccionar una unidad."); // Reemplazado por mensaje de error
-                errorP.textContent = "Debe seleccionar una unidad.";
-                errorP.classList.remove('hidden');
+                alert("Debe seleccionar una unidad.");
                 return;
             }
             const mode = document.getElementById('aviso-mode').value, avisoId = document.getElementById('aviso-id').value, incidenteId = document.getElementById('incidente-id').value; 
             const avisoData = { afiliado: document.getElementById('empleado-afiliado').value, empleado: document.getElementById('empleado-nombre').value, fecha: document.getElementById('solicitud-fecha').value, unidad: document.getElementById('empleado-unidad').value }; 
-            
-            // --- VALIDACIÓN DE DUPLICADO (SOLO AL CREAR) ---
-            if (mode === 'create') {
-                try {
-                    const q = query(collection(db, "avisos"), 
-                        where("empleado", "==", avisoData.empleado), 
-                        where("fecha", "==", avisoData.fecha)
-                    );
-                    const snapshot = await getDocs(q);
-                    if (!snapshot.empty) {
-                        errorP.textContent = "El preaviso ya fue cargado para este empleado en esta fecha.";
-                        errorP.classList.remove('hidden');
-                        return; // Detiene el envío
-                    }
-                } catch (error) {
-                    console.error("Error validando duplicado: ", error);
-                    errorP.textContent = "Error al verificar el aviso. Intente de nuevo.";
-                    errorP.classList.remove('hidden');
-                    return;
-                }
-            }
-            // --- FIN VALIDACIÓN ---
-
             // Incluir el campo funcion al guardar/actualizar
             const incidenteData = { empleado: avisoData.empleado, afiliado: avisoData.afiliado, grado: document.getElementById('empleado-grado').value, funcion: document.getElementById('empleado-funcion').value, direccion: document.getElementById('empleado-direccion').value, solicitudFecha: document.getElementById('solicitud-fecha').value, solicitudHora: document.getElementById('solicitud-hora').value, solicitudTipo: document.getElementById('solicitud-tipo').value, motivo: document.getElementById('solicitud-motivo').value, observacionesAviso: document.getElementById('solicitud-observaciones').value, unidad: avisoData.unidad }; 
-            try { if (mode === 'edit') { await updateDoc(doc(db, "avisos", avisoId), avisoData); await updateDoc(doc(db, "incidentes", incidenteId), incidenteData); await logActivity('UPDATE_AVISO', `Aviso para ${avisoData.empleado}`); } else { avisoData.status = 'Pendiente'; const avisoDocRef = await addDoc(collection(db, "avisos"), avisoData); incidenteData.avisoId = avisoDocRef.id; incidenteData.estado = 'Pendiente'; incidenteData.reconocimiento = null; incidenteData.asistencia = { sePresento: false, seComunico: false, observaciones: '' }; const incidenteDocRef = await addDoc(collection(db, "incidentes"), incidenteData); await updateDoc(incidenteDocRef, { id: incidenteDocRef.id }); await logActivity('CREATE_AVISO', `Aviso para ${avisoData.empleado}`); } closeAvisoModal(); } catch (error) { 
-                console.error(error); 
-                errorP.textContent = `Error al guardar: ${error.message}`;
-                errorP.classList.remove('hidden');
-            } 
-        });
+            try { if (mode === 'edit') { await updateDoc(doc(db, "avisos", avisoId), avisoData); await updateDoc(doc(db, "incidentes", incidenteId), incidenteData); await logActivity('UPDATE_AVISO', `Aviso para ${avisoData.empleado}`); } else { avisoData.status = 'Pendiente'; const avisoDocRef = await addDoc(collection(db, "avisos"), avisoData); incidenteData.avisoId = avisoDocRef.id; incidenteData.estado = 'Pendiente'; incidenteData.reconocimiento = null; incidenteData.asistencia = { sePresento: false, seComunico: false, observaciones: '' }; const incidenteDocRef = await addDoc(collection(db, "incidentes"), incidenteData); await updateDoc(incidenteDocRef, { id: incidenteDocRef.id }); await logActivity('CREATE_AVISO', `Aviso para ${avisoData.empleado}`); } closeAvisoModal(); } catch (error) { console.error(error); } });
         async function deleteAviso(avisoId) { if (confirm('¿Eliminar este aviso y su incidente asociado?')) { try { const q = query(collection(db, "incidentes"), where("avisoId", "==", avisoId)), snap = await getDocs(q), batch = writeBatch(db); snap.forEach(d => batch.delete(d.ref)); batch.delete(doc(db, "avisos", avisoId)); await batch.commit(); await logActivity('DELETE_AVISO', `Aviso ID: ${avisoId}`); alert('Aviso eliminado.'); } catch (error) { console.error(error); } } }
         
         // --- GESTIÓN DE INCIDENTES ---
@@ -2356,4 +2315,4 @@
         };
     </script>
 </body>
-</html> 
+</html>
