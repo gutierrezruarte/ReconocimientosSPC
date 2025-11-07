@@ -215,23 +215,24 @@
                                 <table class="w-full text-sm text-left text-gray-500">
                                     <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                                         <tr>
+                                            <!-- CORREGIDO: Headers para Usuarios -->
                                             <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('usuarios-table', 0)">Afiliado <i class="fas fa-sort"></i></th>
                                             <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('usuarios-table', 1)">Nombre <i class="fas fa-sort"></i></th>
                                             <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('usuarios-table', 2)">Roles <i class="fas fa-sort"></i></th>
                                             <th scope="col" class="px-6 py-3">Acciones</th>
                                         </tr>
                                     </thead>
-                                    <tbody id="usuarios-table">
-                                        <!-- Filas se insertarán dinámicamente -->
-                                    </tbody>
+                                    <!-- CORREGIDO: ID de tbody correcto -->
+                                    <tbody id="usuarios-table"></tbody>
                                 </table>
                             </div>
+                            <!-- CORREGIDO: ID de paginación correcto -->
                             <div id="usuarios-table-pagination" class="pagination-controls mt-4"></div>
                         </div>
                     </div>
 
-                     <div id="importar-view" class="view-content hidden fade-in">
-                        <h2 class="text-3xl font-bold mb-4 text-gray-700">Importar Personal desde Excel</h2>
+                    <!-- CORREGIDO: Renombrado de 'registro-view' a 'importar-view' -->
+                    <div id="importar-view" class="view-content hidden fade-in">
                         <div class="bg-white p-6 rounded-2xl shadow-lg">
                             <p class="mb-4 text-gray-600">Seleccione un archivo Excel (.xlsx, .xls) con los datos del personal. La primera fila debe contener los encabezados de las columnas.</p>
                             <p class="mb-4 text-sm text-gray-500">Columnas requeridas: <strong>Matricula, Apellido y Nombre, Jerarquia, Dom_actua, Funcion</strong>.</p>
@@ -439,6 +440,7 @@
                         </div>
                     </div>
 
+                    <!-- CORREGIDO: Movida la vista de Profesionales aquí -->
                     <div id="profesionales-view" class="view-content hidden fade-in">
                         <div class="flex justify-between items-center mb-6">
                             <h2 class="text-3xl font-bold text-gray-700">Gestión de Profesionales</h2>
@@ -447,6 +449,37 @@
                              <div class="mb-4">
                                 <!-- CAMBIO: Se añade la columna 3 (observaciones) a la búsqueda -->
                                 <input type="text" id="search-profesionales" onkeyup="filterTable('profesionales-table')" placeholder="Buscar por Matrícula, Nombre u Observación..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
+                             </div>
+                             <div class="overflow-x-auto">
+                                <table class="w-full text-sm text-left text-gray-500">
+                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                        <tr>
+                                            <!-- CORREGIDO: Headers para Profesionales -->
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('profesionales-table', 0)">Matrícula <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('profesionales-table', 1)">Nombre y Apellido <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('profesionales-table', 2)">Verificado <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('profesionales-table', 3)">Observaciones <i class="fas fa-sort"></i></th>
+                                        </tr>
+                                    </thead>
+                                    <!-- CORREGIDO: ID de tbody correcto -->
+                                    <tbody id="profesionales-table"></tbody>
+                                </table>
+                            </div>
+                            <!-- CORREGIDO: ID de paginación correcto -->
+                            <div id="profesionales-table-pagination" class="pagination-controls mt-4"></div>
+                        </div>
+                    </div>
+
+                    <!-- CORREGIDO: Renombrado de 'profesionales-view' a 'registro-view' -->
+                    <div id="registro-view" class="view-content hidden fade-in">
+                        <div class="flex justify-between items-center mb-6">
+                            <!-- CORREGIDO: Título -->
+                            <h2 class="text-3xl font-bold text-gray-700">Registro de Actividad</h2>
+                        </div>
+                        <div class="bg-white p-6 rounded-2xl shadow-lg">
+                             <div class="mb-4">
+                                <!-- CORREGIDO: ID y placeholder -->
+                                <input type="text" id="search-registro" onkeyup="filterTable('registro-table')" placeholder="Buscar en el registro..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
                              </div>
                              <div class="overflow-x-auto">
                                 <table class="w-full text-sm text-left text-gray-500">
@@ -2267,8 +2300,18 @@
         */
         
         function sortTable(tableId, colIndex) {
-            const table = document.getElementById(tableId);
-            const tbody = table.tBodies[0];
+            const tbody = document.getElementById(tableId);
+            if (!tbody) {
+                console.error(`sortTable: No tbody found with id ${tableId}`);
+                return;
+            }
+            
+            const tableElement = tbody.closest('table');
+            if (!tableElement) {
+                 console.error(`sortTable: Could not find parent table for tbody ${tableId}`);
+                return;
+            }
+
             const rows = Array.from(tbody.rows);
             const key = `${tableId}-${colIndex}`;
             const currentDir = sortState[key] || 'asc';
@@ -2276,30 +2319,47 @@
             sortState[key] = newDir;
 
             // Reset sort icons
-            table.querySelectorAll('th i.fa-sort').forEach(icon => {
-                icon.classList.remove('fa-sort-up', 'fa-sort-down');
-                icon.classList.add('fa-sort');
+            tableElement.querySelectorAll('th i').forEach(icon => {
+                if (icon.classList.contains('fa-sort-up') || icon.classList.contains('fa-sort-down')) {
+                    icon.classList.remove('fa-sort-up', 'fa-sort-down');
+                    icon.classList.add('fa-sort');
+                }
             });
-            const headerIcon = table.querySelector(`th:nth-child(${colIndex + 1}) i`);
-            headerIcon.classList.remove('fa-sort');
-            headerIcon.classList.add(newDir === 'asc' ? 'fa-sort-up' : 'fa-sort-down');
+            const headerIcon = tableElement.querySelector(`thead th:nth-child(${colIndex + 1}) i`);
+            if (headerIcon) {
+                headerIcon.classList.remove('fa-sort');
+                headerIcon.classList.add(newDir === 'asc' ? 'fa-sort-up' : 'fa-sort-down');
+            }
 
             rows.sort((a, b) => {
                 let valA, valB;
+                
+                if (!a.cells[colIndex] || !b.cells[colIndex]) return 0;
                 
                 // Si es la columna de 'Verificado', compara el estado del checkbox
                 if (tableId === 'profesionales-table' && colIndex === 2) {
                     valA = a.cells[colIndex].querySelector('input[type="checkbox"]').checked;
                     valB = b.cells[colIndex].querySelector('input[type="checkbox"]').checked;
-                // CAMBIO: Si es la columna de 'Observaciones', compara el valor del textarea
+                // Si es la columna de 'Observaciones', compara el valor del textarea
                 } else if (tableId === 'profesionales-table' && colIndex === 3) {
                     valA = a.cells[colIndex].querySelector('textarea').value.toUpperCase();
                     valB = b.cells[colIndex].querySelector('textarea').value.toUpperCase();
                 } else {
                     valA = a.cells[colIndex].textContent.trim();
                     valB = b.cells[colIndex].textContent.trim();
-                    if (!isNaN(valA) && !isNaN(valB)) {
-                        // Trata como número si es numérico
+                    
+                    // ARREGLADO: Lógica para ordenar fechas (DD/MM/YYYY)
+                    const dateRegex = /^(\d{2})\/(\d{2})\/(\d{4})/;
+                    if (dateRegex.test(valA) && dateRegex.test(valB)) {
+                        try {
+                            const [dayA, monthA, yearA] = valA.match(dateRegex).slice(1);
+                            const [dayB, monthB, yearB] = valB.match(dateRegex).slice(1);
+                            valA = `${yearA}-${monthA}-${dayA}`; // Convertir a YYYY-MM-DD
+                            valB = `${yearB}-${monthB}-${dayB}`;
+                        } catch(e) { /* Ignorar y ordenar como texto */ }
+                    }
+                    // ARREGLADO: Lógica para ordenar números
+                    else if (valA && valB && !isNaN(valA) && !isNaN(valB)) {
                         valA = parseFloat(valA);
                         valB = parseFloat(valB);
                     } else {
