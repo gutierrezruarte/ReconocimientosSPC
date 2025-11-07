@@ -215,9 +215,9 @@
                                 <table class="w-full text-sm text-left text-gray-500">
                                     <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                                         <tr>
-                                            <th scope="col" class="px-6 py-3">Afiliado</th>
-                                            <th scope="col" class="px-6 py-3">Nombre</th>
-                                            <th scope="col" class.="px-6 py-3">Roles</th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('usuarios-table', 0)">Afiliado <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('usuarios-table', 1)">Nombre <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('usuarios-table', 2)">Roles <i class="fas fa-sort"></i></th>
                                             <th scope="col" class="px-6 py-3">Acciones</th>
                                         </tr>
                                     </thead>
@@ -267,11 +267,11 @@
                                 <table class="w-full text-sm text-left text-gray-500">
                                     <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                                         <tr>
-                                            <th scope="col" class="px-6 py-3">Afiliado</th>
-                                            <th scope="col" class="px-6 py-3">Empleado</th>
-                                            <th scope="col" class="px-6 py-3">Dep.</th>
-                                            <th scope="col" class="px-6 py-3">Fecha Aviso</th>
-                                            <th scope="col" class="px-6 py-3">Unidad</th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('avisos-pendientes-table', 0)">Afiliado <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('avisos-pendientes-table', 1)">Empleado <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('avisos-pendientes-table', 2)">Dep. <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('avisos-pendientes-table', 3)">Fecha Aviso <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('avisos-pendientes-table', 4)">Unidad <i class="fas fa-sort"></i></th>
                                             <th scope="col" class="px-6 py-3" id="avisos-pendientes-actions-header">Acciones</th>
                                         </tr>
                                     </thead>
@@ -308,12 +308,12 @@
                                 <table class="w-full text-sm text-left text-gray-500">
                                     <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                                         <tr>
-                                            <th scope="col" class="px-6 py-3">Afiliado</th>
-                                            <th scope="col" class="px-6 py-3">Empleado</th>
-                                            <th scope="col" class="px-6 py-3">Dep.</th>
-                                            <th scope="col" class="px-6 py-3">Fecha Aviso</th>
-                                            <th scope="col" class="px-6 py-3">Unidad</th>
-                                            <th scope="col" class="px-6 py-3">Diagnóstico</th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('avisos-visados-table', 0)">Afiliado <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('avisos-visados-table', 1)">Empleado <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('avisos-visados-table', 2)">Dep. <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('avisos-visados-table', 3)">Fecha Aviso <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('avisos-visados-table', 4)">Unidad <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('avisos-visados-table', 5)">Diagnóstico <i class="fas fa-sort"></i></th>
                                             <th scope="col" class="px-6 py-3">Acciones</th>
                                         </tr>
                                     </thead>
@@ -334,11 +334,11 @@
                                 <table class="w-full text-sm text-left text-gray-500">
                                     <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                                         <tr>
-                                            <th scope="col" class="px-6 py-3">N° Incidente</th>
-                                            <th scope="col" class="px-6 py-3">Afiliado</th>
-                                            <th scope="col" class="px-6 py-3">Empleado</th>
-                                            <th scope="col" class="px-6 py-3">Dep.</th>
-                                            <th scope="col" class="px-6 py-3">Fecha Solicitud</th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('pendientes-table', 0)">N° Incidente <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('pendientes-table', 1)">Afiliado <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('pendientes-table', 2)">Empleado <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('pendientes-table', 3)">Dep. <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('pendientes-table', 4)">Fecha Solicitud <i class="fas fa-sort"></i></th>
                                             <th scope="col" class="px-6 py-3">Acción</th>
                                         </tr>
                                     </thead>
@@ -359,11 +359,11 @@
                                 <table class="w-full text-sm text-left text-gray-500">
                                     <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                                         <tr>
-                                            <th scope="col" class="px-6 py-3">N° Incidente</th>
-                                            <th scope="col" class="px-6 py-3">Afiliado</th>
-                                            <th scope="col" class="px-6 py-3">Empleado</th>
-                                            <th scope="col" class="px-6 py-3">Dep.</th>
-                                            <th scope="col" class="px-6 py-3">Fecha Evaluación</th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('completados-table', 0)">N° Incidente <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('completados-table', 1)">Afiliado <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('completados-table', 2)">Empleado <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('completados-table', 3)">Dep. <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('completados-table', 4)">Fecha Evaluación <i class="fas fa-sort"></i></th>
                                             <th scope="col" class="px-6 py-3">Acción</th>
                                         </tr>
                                     </thead>
@@ -393,12 +393,12 @@
                                 <table class="w-full text-sm text-left text-gray-500">
                                     <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                                         <tr>
-                                            <th scope="col" class="px-6 py-3">N° Incidente</th>
-                                            <th scope="col" class="px-6 py-3">Afiliado</th>
-                                            <th scope="col" class="px-6 py-3">Empleado</th>
-                                            <th scope="col" class="px-6 py-3">Dep.</th>
-                                            <th scope="col" class="px-6 py-3">Fecha Evaluación</th>
-                                            <th scope="col" class="px-6 py-3">Encuadra</th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('evaluados-table', 0)">N° Incidente <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('evaluados-table', 1)">Afiliado <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('evaluados-table', 2)">Empleado <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('evaluados-table', 3)">Dep. <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('evaluados-table', 4)">Fecha Evaluación <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('evaluados-table', 5)">Encuadra <i class="fas fa-sort"></i></th>
                                             <th scope="col" class="px-6 py-3">Acción</th>
                                         </tr>
                                     </thead>
@@ -452,38 +452,12 @@
                                 <table class="w-full text-sm text-left text-gray-500">
                                     <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                                         <tr>
-                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('profesionales-table', 0)">Matrícula <i class="fas fa-sort"></i></th>
-                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('profesionales-table', 1)">Nombre y Apellido <i class="fas fa-sort"></i></th>
-                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('profesionales-table', 2)">Verificado <i class="fas fa-sort"></i></th>
-                                            <!-- NUEVA COLUMNA -->
-                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('profesionales-table', 3)">Observaciones <i class="fas fa-sort"></i></th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="profesionales-table">
-                                        <!-- Filas se insertarán dinámicamente -->
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div id="profesionales-table-pagination" class="pagination-controls mt-4"></div>
-                        </div>
-                    </div>
-
-                    <div id="registro-view" class="view-content hidden fade-in">
-                        <h2 class="text-3xl font-bold mb-6 text-gray-700">Registro de Actividad del Sistema</h2>
-                        <div class="bg-white p-6 rounded-2xl shadow-lg">
-                            <div class="mb-4">
-                                <input type="text" id="search-registro" onkeyup="filterTable('registro-table')" placeholder="Buscar por afiliado, usuario, acción o descripción..." class="w-full bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block p-2.5">
-                            </div>
-                            <div class="overflow-x-auto">
-                                <table class="w-full text-sm text-left text-gray-500">
-                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
-                                        <tr>
-                                            <th scope="col" class="px-6 py-3">Fecha y Hora</th>
-                                            <th scope="col" class="px-6 py-3">Afiliado</th>
-                                            <th scope="col" class="px-6 py-3">Usuario</th>
-                                            <th scope="col" class="px-6 py-3">Acción</th>
-                                            <th scope="col" class="px-6 py-3">Rol</th>
-                                            <th scope="col" class="px-6 py-3">Descripción</th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('registro-table', 0)">Fecha y Hora <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('registro-table', 1)">Afiliado <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('registro-table', 2)">Usuario <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('registro-table', 3)">Acción <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('registro-table', 4)">Rol <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('registro-table', 5)">Descripción <i class="fas fa-sort"></i></th>
                                         </tr>
                                     </thead>
                                     <tbody id="registro-table"></tbody>
@@ -535,12 +509,12 @@
                                 <table class="w-full text-sm text-left text-gray-500">
                                     <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                                         <tr>
-                                            <th scope="col" class="px-6 py-3">Afiliado</th>
-                                            <th scope="col" class="px-6 py-3">Empleado</th>
-                                            <th scope="col" class="px-6 py-3">Dep.</th>
-                                            <th scope="col" class="px-6 py-3">Unidad</th>
-                                            <th scope="col" class="px-6 py-3">Fin Licencia</th>
-                                            <th scope="col" class="px-6 py-3">Debe Presentarse</th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('presentarse-table', 0)">Afiliado <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('presentarse-table', 1)">Empleado <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('presentarse-table', 2)">Dep. <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('presentarse-table', 3)">Unidad <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('presentarse-table', 4)">Fin Licencia <i class="fas fa-sort"></i></th>
+                                            <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('presentarse-table', 5)">Debe Presentarse <i class="fas fa-sort"></i></th>
                                             <th scope="col" class="px-6 py-3">Se Presentó</th>
                                             <th scope="col" class="px-6 py-3">Se Comunicó</th>
                                             <th scope="col" class="px-6 py-3">Observaciones</th>
@@ -622,6 +596,8 @@
                         <textarea id="solicitud-observaciones" rows="3" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Añadir observaciones sobre la solicitud..."></textarea>
                     </div>
                 </div>
+                <!-- Error message container -->
+                <p id="aviso-error" class="text-red-500 text-sm text-center hidden mt-4"></p>
                 <div class="flex justify-end space-x-4 pt-6 mt-4 border-t">
                     <button type="button" onclick="closeAvisoModal()" class="py-2 px-4 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition">Cancelar</button>
                     <button type="submit" class="py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">Guardar Aviso</button>
@@ -663,13 +639,13 @@
                     <table class="w-full text-sm">
                         <thead class="text-xs text-gray-700 uppercase bg-gray-50">
                             <tr>
-                                <th class="px-4 py-2">Afiliado</th>
-                                <th class="px-4 py-2">Empleado</th>
-                                <th class="px-4 py-2">Dep.</th>
-                                <th class="px-4 py-2">Unidad</th>
-                                <th class="px-4 py-2">Fecha</th>
-                                <th class="px-4 py-2">Estado</th>
-                                <th class="px-4 py-2">Encuadre</th>
+                                <th class="px-4 py-2 cursor-pointer" onclick="sortTable('avisos-fecha-table', 0)">Afiliado <i class="fas fa-sort"></i></th>
+                                <th class="px-4 py-2 cursor-pointer" onclick="sortTable('avisos-fecha-table', 1)">Empleado <i class="fas fa-sort"></i></th>
+                                <th class="px-4 py-2 cursor-pointer" onclick="sortTable('avisos-fecha-table', 2)">Dep. <i class="fas fa-sort"></i></th>
+                                <th class="px-4 py-2 cursor-pointer" onclick="sortTable('avisos-fecha-table', 3)">Unidad <i class="fas fa-sort"></i></th>
+                                <th class="px-4 py-2 cursor-pointer" onclick="sortTable('avisos-fecha-table', 4)">Fecha <i class="fas fa-sort"></i></th>
+                                <th class="px-4 py-2 cursor-pointer" onclick="sortTable('avisos-fecha-table', 5)">Estado <i class="fas fa-sort"></i></th>
+                                <th class="px-4 py-2 cursor-pointer" onclick="sortTable('avisos-fecha-table', 6)">Encuadre <i class="fas fa-sort"></i></th>
                             </tr>
                         </thead>
                         <tbody id="avisos-fecha-table">
@@ -1318,19 +1294,58 @@
             document.getElementById('aviso-modal').classList.add('flex');
             document.getElementById('aviso-modal').classList.remove('hidden');
         }
-        function closeAvisoModal() { document.getElementById('aviso-modal').classList.add('hidden'); document.getElementById('aviso-modal').classList.remove('flex'); document.getElementById('aviso-form').reset(); }
+        function closeAvisoModal() { 
+            document.getElementById('aviso-modal').classList.add('hidden'); 
+            document.getElementById('aviso-modal').classList.remove('flex'); 
+            document.getElementById('aviso-form').reset(); 
+            const errorP = document.getElementById('aviso-error');
+            if (errorP) errorP.classList.add('hidden');
+        }
         
         document.getElementById('aviso-form').addEventListener('submit', async function(e) { 
             e.preventDefault(); 
+            const errorP = document.getElementById('aviso-error');
+            errorP.classList.add('hidden'); // Oculta error previo
+
             if (!document.getElementById('empleado-unidad').value) {
-                alert("Debe seleccionar una unidad.");
+                // alert("Debe seleccionar una unidad."); // Reemplazado por mensaje de error
+                errorP.textContent = "Debe seleccionar una unidad.";
+                errorP.classList.remove('hidden');
                 return;
             }
             const mode = document.getElementById('aviso-mode').value, avisoId = document.getElementById('aviso-id').value, incidenteId = document.getElementById('incidente-id').value; 
             const avisoData = { afiliado: document.getElementById('empleado-afiliado').value, empleado: document.getElementById('empleado-nombre').value, fecha: document.getElementById('solicitud-fecha').value, unidad: document.getElementById('empleado-unidad').value }; 
+            
+            // --- VALIDACIÓN DE DUPLICADO (SOLO AL CREAR) ---
+            if (mode === 'create') {
+                try {
+                    const q = query(collection(db, "avisos"), 
+                        where("empleado", "==", avisoData.empleado), 
+                        where("fecha", "==", avisoData.fecha)
+                    );
+                    const snapshot = await getDocs(q);
+                    if (!snapshot.empty) {
+                        errorP.textContent = "El preaviso ya fue cargado para este empleado en esta fecha.";
+                        errorP.classList.remove('hidden');
+                        return; // Detiene el envío
+                    }
+                } catch (error) {
+                    console.error("Error validando duplicado: ", error);
+                    errorP.textContent = "Error al verificar el aviso. Intente de nuevo.";
+                    errorP.classList.remove('hidden');
+                    return;
+                }
+            }
+            // --- FIN VALIDACIÓN ---
+
             // Incluir el campo funcion al guardar/actualizar
             const incidenteData = { empleado: avisoData.empleado, afiliado: avisoData.afiliado, grado: document.getElementById('empleado-grado').value, funcion: document.getElementById('empleado-funcion').value, direccion: document.getElementById('empleado-direccion').value, solicitudFecha: document.getElementById('solicitud-fecha').value, solicitudHora: document.getElementById('solicitud-hora').value, solicitudTipo: document.getElementById('solicitud-tipo').value, motivo: document.getElementById('solicitud-motivo').value, observacionesAviso: document.getElementById('solicitud-observaciones').value, unidad: avisoData.unidad }; 
-            try { if (mode === 'edit') { await updateDoc(doc(db, "avisos", avisoId), avisoData); await updateDoc(doc(db, "incidentes", incidenteId), incidenteData); await logActivity('UPDATE_AVISO', `Aviso para ${avisoData.empleado}`); } else { avisoData.status = 'Pendiente'; const avisoDocRef = await addDoc(collection(db, "avisos"), avisoData); incidenteData.avisoId = avisoDocRef.id; incidenteData.estado = 'Pendiente'; incidenteData.reconocimiento = null; incidenteData.asistencia = { sePresento: false, seComunico: false, observaciones: '' }; const incidenteDocRef = await addDoc(collection(db, "incidentes"), incidenteData); await updateDoc(incidenteDocRef, { id: incidenteDocRef.id }); await logActivity('CREATE_AVISO', `Aviso para ${avisoData.empleado}`); } closeAvisoModal(); } catch (error) { console.error(error); } });
+            try { if (mode === 'edit') { await updateDoc(doc(db, "avisos", avisoId), avisoData); await updateDoc(doc(db, "incidentes", incidenteId), incidenteData); await logActivity('UPDATE_AVISO', `Aviso para ${avisoData.empleado}`); } else { avisoData.status = 'Pendiente'; const avisoDocRef = await addDoc(collection(db, "avisos"), avisoData); incidenteData.avisoId = avisoDocRef.id; incidenteData.estado = 'Pendiente'; incidenteData.reconocimiento = null; incidenteData.asistencia = { sePresento: false, seComunico: false, observaciones: '' }; const incidenteDocRef = await addDoc(collection(db, "incidentes"), incidenteData); await updateDoc(incidenteDocRef, { id: incidenteDocRef.id }); await logActivity('CREATE_AVISO', `Aviso para ${avisoData.empleado}`); } closeAvisoModal(); } catch (error) { 
+                console.error(error); 
+                errorP.textContent = `Error al guardar: ${error.message}`;
+                errorP.classList.remove('hidden');
+            } 
+        });
         async function deleteAviso(avisoId) { if (confirm('¿Eliminar este aviso y su incidente asociado?')) { try { const q = query(collection(db, "incidentes"), where("avisoId", "==", avisoId)), snap = await getDocs(q), batch = writeBatch(db); snap.forEach(d => batch.delete(d.ref)); batch.delete(doc(db, "avisos", avisoId)); await batch.commit(); await logActivity('DELETE_AVISO', `Aviso ID: ${avisoId}`); alert('Aviso eliminado.'); } catch (error) { console.error(error); } } }
         
         // --- GESTIÓN DE INCIDENTES ---
@@ -1682,7 +1697,15 @@
                 allDataCache[tableId] = [];
             } else { 
                 // Prepara el HTML de la tabla, pero la data se guarda en el caché
-                container.innerHTML = `<div class="overflow-x-auto"><table class="w-full text-sm"><thead><tr class="text-xs text-gray-700 uppercase bg-gray-50"><th class="px-6 py-3">Afiliado</th><th class="px-6 py-3">Empleado</th><th class="px-6 py-3">Dep.</th><th class="px-6 py-3">Fecha Ev.</th><th class="px-6 py-3">Diagnóstico</th><th class="px-6 py-3">Médico</th><th class="px-6 py-3">Acción</th></tr></thead><tbody id="antecedentes-table"></tbody></table></div>`;
+                container.innerHTML = `<div class="overflow-x-auto"><table class="w-full text-sm"><thead class="text-xs text-gray-700 uppercase bg-gray-50"><tr>
+                <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('antecedentes-table', 0)">Afiliado <i class="fas fa-sort"></i></th>
+                <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('antecedentes-table', 1)">Empleado <i class="fas fa-sort"></i></th>
+                <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('antecedentes-table', 2)">Dep. <i class="fas fa-sort"></i></th>
+                <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('antecedentes-table', 3)">Fecha Ev. <i class="fas fa-sort"></i></th>
+                <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('antecedentes-table', 4)">Diagnóstico <i class="fas fa-sort"></i></th>
+                <th scope="col" class="px-6 py-3 cursor-pointer" onclick="sortTable('antecedentes-table', 5)">Médico <i class="fas fa-sort"></i></th>
+                <th scope="col" class="px-6 py-3">Acción</th>
+            </tr></thead><tbody id="antecedentes-table"></tbody></table></div>`;
                 allDataCache[tableId] = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
             }
             paginationState[tableId] = { currentPage: 1, rowsPerPage: ROWS_PER_PAGE };
