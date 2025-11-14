@@ -74,6 +74,33 @@
             font-size: 0.875rem; /* text-sm */
             color: #4b5563; /* text-gray-600 */
         }
+        
+        /* --- NUEVO: Estilos para Toast --- */
+        @keyframes toastIn {
+            from { opacity: 0; transform: translateX(100%); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+        @keyframes toastOut {
+            from { opacity: 1; transform: translateX(0); }
+            to { opacity: 0; transform: translateX(100%); }
+        }
+        .toast {
+            animation: toastIn 0.5s ease-out forwards;
+            padding: 1rem 1.5rem;
+            border-radius: 0.5rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+        .toast.fade-out {
+            animation: toastOut 0.5s ease-in forwards;
+        }
+        .toast-success { background-color: #d1fae5; color: #065f46; }
+        .toast-error { background-color: #fee2e2; color: #991b1b; }
+        .toast-warning { background-color: #fef3c7; color: #92400e; }
+        /* --- FIN Estilos para Toast --- */
     </style>
 </head>
 <body class="bg-gray-100 font-sans">
@@ -579,7 +606,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                     <div class="md:col-span-2">
                         <label for="empleado-afiliado" class="block mb-2 text-sm font-medium text-gray-900">Número de Afiliado (Matrícula)</label>
-                        <input type="text" id="empleado-afiliado" onblur="precargarDatosAfiliado()" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Buscar por Matrícula" required>
+                        <input type="text" id="empleado-afiliado" class="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5" placeholder="Buscar por Matrícula" required>
                     </div>
                      <div>
                         <label for="empleado-grado" class="block mb-2 text-sm font-medium text-gray-900">Grado (Jerarquía)</label>
@@ -765,6 +792,26 @@
         </div>
     </div>
 
+    <!-- --- NUEVO: Modal de Confirmación --- -->
+    <div id="confirm-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4 no-print z-50">
+        <div class="bg-white rounded-2xl shadow-xl w-full max-w-md p-8 text-center">
+             <i class="fas fa-exclamation-triangle text-5xl text-red-500 mb-4"></i>
+             <h2 class="text-2xl font-bold mb-4">Confirmar Acción</h2>
+             <p id="confirm-modal-message" class="text-gray-600 mb-6">¿Está seguro?</p>
+             <div class="flex justify-center space-x-4">
+                <button id="confirm-modal-cancel-btn" class="py-2 px-6 bg-gray-300 text-gray-800 rounded-lg hover:bg-gray-400 transition">Cancelar</button>
+                <button id="confirm-modal-confirm-btn" class="py-2 px-6 bg-red-600 text-white rounded-lg hover:bg-red-700 transition">Confirmar</button>
+            </div>
+        </div>
+    </div>
+    <!-- --- FIN Modal de Confirmación --- -->
+
+    <!-- --- NUEVO: Contenedor de Toast --- -->
+    <div id="toast-container" class="fixed top-5 right-5 z-[100] space-y-2">
+        <!-- Toasts se añadirán aquí -->
+    </div>
+    <!-- --- FIN Contenedor de Toast --- -->
+
 
     <!-- Scripts de Firebase -->
     <script type="module">
@@ -800,6 +847,7 @@
         const unidadesDisponibles = ['TODAS', 'CC1', 'CC2', 'EP3', 'EP4', 'EP5', 'EP6', 'EP7', 'EP8', 'EP9', 'JEFATURA', 'EDIFICIO LAPRIDA', 'ESCUELA DE CADETES', 'ESCUELA DE SUBOFICIALES'];
         let sortState = {}; // Para rastrear el estado de ordenamiento de las tablas
         let isSyncingProfesionales = false; // Declarada en el ámbito global
+        let _onConfirmCallback = null; // Para el modal de confirmación
 
         // --- INICIO: NUEVOS ESTADOS GLOBALES PARA PAGINACIÓN ---
         let paginationState = {}; // { tableId: { currentPage: 1, rowsPerPage: 100 } }
@@ -864,6 +912,45 @@
             const text = abreviaturas[unidad] || unidad;
             return `<span class="px-2 py-1 text-xs font-medium rounded-full ${colorClasses}">${text}</span>`;
         }
+
+        // --- NUEVAS FUNCIONES DE NOTIFICACIÓN Y CONFIRMACIÓN ---
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            let iconClass = 'fas fa-check-circle';
+            let typeClass = 'toast-success';
+            
+            if (type === 'error') {
+                iconClass = 'fas fa-times-circle';
+                typeClass = 'toast-error';
+            } else if (type === 'warning') {
+                iconClass = 'fas fa-exclamation-triangle';
+                typeClass = 'toast-warning';
+            }
+            
+            toast.className = `toast ${typeClass}`;
+            toast.innerHTML = `<i class="${iconClass}"></i> ${message}`;
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.classList.add('fade-out');
+                toast.addEventListener('animationend', () => toast.remove());
+            }, 3000);
+        }
+
+        function openConfirmModal(message, onConfirmCallback) {
+            document.getElementById('confirm-modal-message').textContent = message;
+            _onConfirmCallback = onConfirmCallback;
+            document.getElementById('confirm-modal').classList.add('flex');
+            document.getElementById('confirm-modal').classList.remove('hidden');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirm-modal').classList.add('hidden');
+            document.getElementById('confirm-modal').classList.remove('flex');
+            _onConfirmCallback = null;
+        }
+        // --- FIN NUEVAS FUNCIONES ---
         
         // --- LÓGICA DE LOGIN Y AUTENTICACIÓN ---
         document.getElementById('login-form').addEventListener('submit', async (e) => {
@@ -918,7 +1005,8 @@
                 if (currentUser.unidades && currentUser.unidades.length > 0) {
                      showUnidadSelection(currentUser.unidades);
                 } else {
-                     logout(); alert('No tiene unidades asignadas para el rol de Personal.');
+                     logout(); 
+                     showToast('No tiene unidades asignadas para el rol de Personal.', 'error');
                 }
             } else {
                 showPortal();
@@ -937,7 +1025,10 @@
 
         async function continueLoginPersonal(){
             const selectedUnidad = document.getElementById('login-unidad-select').value;
-            if(!selectedUnidad) { alert('Por favor, seleccione una unidad.'); return; }
+            if(!selectedUnidad) { 
+                showToast('Por favor, seleccione una unidad.', 'warning');
+                return; 
+            }
             currentUserUnidad = selectedUnidad;
             await logActivity('SELECT_UNIDAD', `Seleccionó la unidad: ${selectedUnidad}.`);
             showPortal();
@@ -1164,20 +1255,26 @@
             e.preventDefault();
             const mode = document.getElementById('usuario-mode').value, afiliado = document.getElementById('usuario-afiliado').value, nombre = document.getElementById('usuario-nombre').value, password = document.getElementById('usuario-password').value;
             const roles = Array.from(document.querySelectorAll('input[name="roles"]:checked')).map(cb => cb.value);
-            if (roles.length === 0 || nombre === 'Afiliado no encontrado.') { alert('Complete todos los campos correctamente.'); return; }
+            if (roles.length === 0 || nombre === 'Afiliado no encontrado.') { showToast('Complete todos los campos correctamente.', 'error'); return; }
             const userData = { afiliado, nombreCompleto: nombre, roles };
             if (password) userData.password = password;
-            if (roles.includes('personal')) { userData.unidades = Array.from(document.querySelectorAll('input[name="unidades"]:checked')).map(cb => cb.value); if (userData.unidades.length === 0) { alert('Seleccione al menos un establecimiento para Personal.'); return; } } else { userData.unidades = []; }
-            try { await setDoc(doc(db, "users", afiliado), userData, { merge: true }); await logActivity(mode === 'create' ? 'CREATE_USER' : 'UPDATE_USER', `Usuario: ${nombre} (${afiliado})`); closeUsuarioModal(); } catch(error) { console.error("Error guardando usuario: ", error); }
+            if (roles.includes('personal')) { userData.unidades = Array.from(document.querySelectorAll('input[name="unidades"]:checked')).map(cb => cb.value); if (userData.unidades.length === 0) { showToast('Seleccione al menos un establecimiento para Personal.', 'error'); return; } } else { userData.unidades = []; }
+            try { await setDoc(doc(db, "users", afiliado), userData, { merge: true }); await logActivity(mode === 'create' ? 'CREATE_USER' : 'UPDATE_USER', `Usuario: ${nombre} (${afiliado})`); closeUsuarioModal(); showToast('Usuario guardado.', 'success'); } catch(error) { console.error("Error guardando usuario: ", error); showToast('Error al guardar usuario.', 'error'); }
         });
 
-        async function resetPassword(afiliado) { const newPassword = prompt(`Ingrese la nueva contraseña para el afiliado ${afiliado}:`); if (newPassword) { await updateDoc(doc(db, "users", afiliado), { password: newPassword.trim() }); await logActivity('RESET_PASSWORD', `Contraseña blanqueada para usuario ${afiliado}.`); alert("Contraseña actualizada."); } }
-        async function deleteUser(afiliado) { if (confirm(`¿Seguro que desea eliminar al usuario ${afiliado}?`)) { await deleteDoc(doc(db, "users", afiliado)); await logActivity('DELETE_USER', `Usuario eliminado: ${afiliado}.`); alert("Usuario eliminado."); } }
+        async function resetPassword(afiliado) { const newPassword = prompt(`Ingrese la nueva contraseña para el afiliado ${afiliado}:`); if (newPassword) { await updateDoc(doc(db, "users", afiliado), { password: newPassword.trim() }); await logActivity('RESET_PASSWORD', `Contraseña blanqueada para usuario ${afiliado}.`); showToast("Contraseña actualizada.", 'success'); } }
+        async function deleteUser(afiliado) { 
+            openConfirmModal('¿Seguro que desea eliminar este usuario?', async () => {
+                await deleteDoc(doc(db, "users", afiliado)); 
+                await logActivity('DELETE_USER', `Usuario eliminado: ${afiliado}.`); 
+                showToast("Usuario eliminado.", 'success');
+            });
+        }
         
         // --- CAMBIO DE CONTRASEÑA ---
-        function openChangePasswordModal() { if (currentUser.afiliado === '136219951') { alert('La contraseña del Superusuario no se puede modificar.'); return; } document.getElementById('change-password-modal').classList.add('flex'); document.getElementById('change-password-modal').classList.remove('hidden'); }
+        function openChangePasswordModal() { if (currentUser.afiliado === '136219951') { showToast('La contraseña del Superusuario no se puede modificar.', 'warning'); return; } document.getElementById('change-password-modal').classList.add('flex'); document.getElementById('change-password-modal').classList.remove('hidden'); }
         function closeChangePasswordModal() { document.getElementById('change-password-form').reset(); document.getElementById('password-error').classList.add('hidden'); document.getElementById('change-password-modal').classList.add('hidden'); document.getElementById('change-password-modal').classList.remove('flex'); }
-        document.getElementById('change-password-form').addEventListener('submit', async function(e) { e.preventDefault(); const currentPass = document.getElementById('current-password').value, newPass = document.getElementById('new-password').value, confirmPass = document.getElementById('confirm-password').value, errorP = document.getElementById('password-error'); errorP.classList.add('hidden'); if (newPass !== confirmPass) { errorP.textContent = 'Las contraseñas no coinciden.'; errorP.classList.remove('hidden'); return; } const userDocRef = doc(db, "users", currentUser.afiliado), userDocSnap = await getDoc(userDocRef); if (userDocSnap.exists() && userDocSnap.data().password === currentPass) { await updateDoc(userDocRef, { password: newPass }); await logActivity('CHANGE_PASSWORD', 'Usuario cambió su propia contraseña.'); alert('Contraseña actualizada.'); closeChangePasswordModal(); } else { errorP.textContent = 'Contraseña actual incorrecta.'; errorP.classList.remove('hidden'); } });
+        document.getElementById('change-password-form').addEventListener('submit', async function(e) { e.preventDefault(); const currentPass = document.getElementById('current-password').value, newPass = document.getElementById('new-password').value, confirmPass = document.getElementById('confirm-password').value, errorP = document.getElementById('password-error'); errorP.classList.add('hidden'); if (newPass !== confirmPass) { errorP.textContent = 'Las contraseñas no coinciden.'; errorP.classList.remove('hidden'); return; } const userDocRef = doc(db, "users", currentUser.afiliado), userDocSnap = await getDoc(userDocRef); if (userDocSnap.exists() && userDocSnap.data().password === currentPass) { await updateDoc(userDocRef, { password: newPass }); await logActivity('CHANGE_PASSWORD', 'Usuario cambió su propia contraseña.'); showToast('Contraseña actualizada.', 'success'); closeChangePasswordModal(); } else { errorP.textContent = 'Contraseña actual incorrecta.'; errorP.classList.remove('hidden'); } });
         
         // --- IMPORTACIÓN Y AVISOS ---
         async function handleFileUpload() { 
@@ -1217,7 +1314,19 @@
         }
         async function precargarDatosAfiliado() { 
             const afiliadoNumero = document.getElementById('empleado-afiliado').value.trim(); 
+            const errorP = document.getElementById('aviso-error');
+            const modo = document.getElementById('aviso-mode').value;
+            
+            // 1. Limpiar advertencias previas de ESTE campo (no la de la fecha)
+            if (errorP.textContent.startsWith('Advertencia: Este afiliado ya tiene un aviso pendiente')) {
+                errorP.classList.add('hidden');
+                errorP.classList.remove('text-yellow-600');
+                errorP.textContent = '';
+            }
+            
             if (!afiliadoNumero) return; 
+
+            // 2. Precargar datos del personal (lógica existente)
             const docSnap = await getDoc(doc(db, "personal", afiliadoNumero)); 
             if (docSnap.exists()) { 
                 const e = docSnap.data(); 
@@ -1230,6 +1339,35 @@
                  document.getElementById('empleado-grado').value = ''; 
                  document.getElementById('empleado-direccion').value = ''; 
                  document.getElementById('empleado-funcion').value = ''; // Limpia si no existe
+            }
+            
+            // 3. NUEVA VALIDACIÓN: Chequear aviso PENDIENTE (solo al crear)
+            if (modo === 'create') {
+                try {
+                    const q = query(collection(db, "avisos"), 
+                        where("afiliado", "==", afiliadoNumero), 
+                        where("status", "==", "Pendiente")
+                    );
+                    const snapshot = await getDocs(q);
+                    
+                    if (!snapshot.empty) {
+                        const avisoPendiente = snapshot.docs[0].data();
+                        const errorMsg = `Advertencia: Este afiliado ya tiene un aviso pendiente cargado el ${formatDate(avisoPendiente.fecha)}.`;
+                        errorP.textContent = errorMsg;
+                        errorP.classList.remove('hidden', 'text-red-500');
+                        errorP.classList.add('text-yellow-600');
+                    }
+                    
+                } catch (error) {
+                    console.error("Error chequeando aviso pendiente: ", error);
+                }
+            }
+
+            // 4. Limpiar la OTRA advertencia (la de la fecha) si existe.
+            if (errorP.textContent.startsWith('Advertencia: Este empleado ya se encuentra de licencia')) {
+                errorP.classList.add('hidden');
+                errorP.classList.remove('text-yellow-600');
+                errorP.textContent = '';
             }
         }
         
@@ -1320,6 +1458,11 @@
                 }
             }
 
+            // --- NUEVO: Añadir listeners onblur ---
+            document.getElementById('empleado-afiliado').setAttribute('onblur', 'precargarDatosAfiliado()');
+            document.getElementById('solicitud-fecha').setAttribute('onblur', 'checkAvisoSuperposicion()');
+            // --- FIN NUEVO ---
+
             unidadSelect.disabled = !canEditUnidad;
             unidadSelect.classList.toggle('bg-gray-200', !canEditUnidad);
             unidadSelect.classList.toggle('bg-gray-50', canEditUnidad);
@@ -1332,16 +1475,21 @@
             document.getElementById('aviso-modal').classList.remove('flex'); 
             document.getElementById('aviso-form').reset(); 
             const errorP = document.getElementById('aviso-error');
-            if (errorP) errorP.classList.add('hidden');
+            if (errorP) {
+                errorP.classList.add('hidden');
+                errorP.classList.remove('text-yellow-600');
+                errorP.classList.add('text-red-500');
+            }
         }
         
         document.getElementById('aviso-form').addEventListener('submit', async function(e) { 
             e.preventDefault(); 
             const errorP = document.getElementById('aviso-error');
-            errorP.classList.add('hidden'); // Oculta error previo
+            errorP.classList.add('hidden');
+            errorP.classList.remove('text-yellow-600'); // Quitar clase de advertencia
+            errorP.classList.add('text-red-500');   // Poner clase de error
 
             if (!document.getElementById('empleado-unidad').value) {
-                // alert("Debe seleccionar una unidad."); // Reemplazado por mensaje de error
                 errorP.textContent = "Debe seleccionar una unidad.";
                 errorP.classList.remove('hidden');
                 return;
@@ -1362,6 +1510,10 @@
                         errorP.classList.remove('hidden');
                         return; // Detiene el envío
                     }
+
+                    // --- VALIDACIÓN DE SUPERPOSICIÓN DE LICENCIA ELIMINADA DE AQUÍ ---
+                    // El usuario fue advertido por checkAvisoSuperposicion() y puede guardar igual
+
                 } catch (error) {
                     console.error("Error validando duplicado: ", error);
                     errorP.textContent = "Error al verificar el aviso. Intente de nuevo.";
@@ -1373,13 +1525,99 @@
 
             // Incluir el campo funcion al guardar/actualizar
             const incidenteData = { empleado: avisoData.empleado, afiliado: avisoData.afiliado, grado: document.getElementById('empleado-grado').value, funcion: document.getElementById('empleado-funcion').value, direccion: document.getElementById('empleado-direccion').value, solicitudFecha: document.getElementById('solicitud-fecha').value, solicitudHora: document.getElementById('solicitud-hora').value, solicitudTipo: document.getElementById('solicitud-tipo').value, motivo: document.getElementById('solicitud-motivo').value, observacionesAviso: document.getElementById('solicitud-observaciones').value, unidad: avisoData.unidad }; 
-            try { if (mode === 'edit') { await updateDoc(doc(db, "avisos", avisoId), avisoData); await updateDoc(doc(db, "incidentes", incidenteId), incidenteData); await logActivity('UPDATE_AVISO', `Aviso para ${avisoData.empleado}`); } else { avisoData.status = 'Pendiente'; const avisoDocRef = await addDoc(collection(db, "avisos"), avisoData); incidenteData.avisoId = avisoDocRef.id; incidenteData.estado = 'Pendiente'; incidenteData.reconocimiento = null; incidenteData.asistencia = { sePresento: false, seComunico: false, observaciones: '' }; const incidenteDocRef = await addDoc(collection(db, "incidentes"), incidenteData); await updateDoc(incidenteDocRef, { id: incidenteDocRef.id }); await logActivity('CREATE_AVISO', `Aviso para ${avisoData.empleado}`); } closeAvisoModal(); } catch (error) { 
+            try { if (mode === 'edit') { await updateDoc(doc(db, "avisos", avisoId), avisoData); await updateDoc(doc(db, "incidentes", incidenteId), incidenteData); await logActivity('UPDATE_AVISO', `Aviso para ${avisoData.empleado}`); } else { avisoData.status = 'Pendiente'; const avisoDocRef = await addDoc(collection(db, "avisos"), avisoData); incidenteData.avisoId = avisoDocRef.id; incidenteData.estado = 'Pendiente'; incidenteData.reconocimiento = null; incidenteData.asistencia = { sePresento: false, seComunico: false, observaciones: '' }; const incidenteDocRef = await addDoc(collection(db, "incidentes"), incidenteData); await updateDoc(incidenteDocRef, { id: incidenteDocRef.id }); await logActivity('CREATE_AVISO', `Aviso para ${avisoData.empleado}`); } 
+                closeAvisoModal(); 
+                showToast('Aviso guardado.', 'success');
+            } catch (error) { 
                 console.error(error); 
                 errorP.textContent = `Error al guardar: ${error.message}`;
                 errorP.classList.remove('hidden');
             } 
         });
-        async function deleteAviso(avisoId) { if (confirm('¿Eliminar este aviso y su incidente asociado?')) { try { const q = query(collection(db, "incidentes"), where("avisoId", "==", avisoId)), snap = await getDocs(q), batch = writeBatch(db); snap.forEach(d => batch.delete(d.ref)); batch.delete(doc(db, "avisos", avisoId)); await batch.commit(); await logActivity('DELETE_AVISO', `Aviso ID: ${avisoId}`); alert('Aviso eliminado.'); } catch (error) { console.error(error); } } }
+
+        // --- NUEVO: Wrapper de borrado con Modal ---
+        function deleteAviso(avisoId) {
+            openConfirmModal(
+                '¿Seguro que desea eliminar este aviso y su incidente asociado? Esta acción no se puede deshacer.',
+                () => { __internalDeleteAviso(avisoId); }
+            );
+        }
+
+        async function __internalDeleteAviso(avisoId) { 
+            try { 
+                const q = query(collection(db, "incidentes"), where("avisoId", "==", avisoId));
+                const snap = await getDocs(q);
+                const batch = writeBatch(db);
+                snap.forEach(d => batch.delete(d.ref));
+                batch.delete(doc(db, "avisos", avisoId)); 
+                await batch.commit(); 
+                await logActivity('DELETE_AVISO', `Aviso ID: ${avisoId}`); 
+                showToast('Aviso eliminado correctamente.', 'success');
+            } catch (error) { 
+                console.error(error); 
+                showToast('Error al eliminar el aviso.', 'error');
+            } 
+        }
+
+        // --- NUEVA FUNCIÓN DE VALIDACIÓN ASÍNCRONA (ONBLUR) ---
+        async function checkAvisoSuperposicion() {
+            const afiliado = document.getElementById('empleado-afiliado').value;
+            const empleado = document.getElementById('empleado-nombre').value;
+            const fechaAviso = document.getElementById('solicitud-fecha').value;
+            const errorP = document.getElementById('aviso-error');
+
+            if (!afiliado || !empleado || !fechaAviso || document.getElementById('aviso-mode').value === 'edit') {
+                return; // No hacer nada si faltan datos clave o si estamos editando
+            }
+
+            // Limpiar solo si no es un error de "mismo día"
+            if (errorP.textContent.includes('ya se encuentra de licencia')) {
+                errorP.classList.add('hidden');
+                errorP.textContent = '';
+            }
+
+            try {
+                const qIncidentes = query(collection(db, "incidentes"),
+                    where("empleado", "==", empleado),
+                    where("estado", "==", "Completado")
+                );
+                const incidentesSnap = await getDocs(qIncidentes);
+                let overlappingIncident = null;
+
+                if (!incidentesSnap.empty) {
+                    for (const doc of incidentesSnap.docs) {
+                        const inc = doc.data();
+                        const rec = inc.reconocimiento;
+                        if (rec && rec.licenciaDesde && rec.altaDesde) {
+                            if (fechaAviso >= rec.licenciaDesde && fechaAviso <= rec.altaDesde) {
+                                overlappingIncident = inc;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (overlappingIncident) {
+                    const rec = overlappingIncident.reconocimiento;
+                    const errorMsg = `Advertencia: Este empleado ya se encuentra de licencia por "${rec.diagnostico || 'N/A'}" (${rec.encuadra}) hasta el ${formatDate(rec.altaDesde)}.`;
+                    errorP.textContent = errorMsg;
+                    // Mostrar como advertencia (amarillo/naranja) y no ocultar
+                    errorP.classList.remove('hidden', 'text-red-500');
+                    errorP.classList.add('text-yellow-600'); // Usar una clase de advertencia
+                } else {
+                    // Si no hay superposición, limpiar el error (si era una advertencia)
+                    if (errorP.textContent.startsWith('Advertencia:')) {
+                        errorP.classList.add('hidden');
+                        errorP.classList.remove('text-yellow-600');
+                        errorP.textContent = '';
+                    }
+                }
+            } catch (error) {
+                console.error("Error chequeando superposición: ", error);
+                // No mostrar error al usuario, solo en consola
+            }
+        }
+        // --- FIN NUEVA FUNCIÓN ---
         
         // --- GESTIÓN DE INCIDENTES ---
         function listenToIncidentes(status) {
@@ -1413,7 +1651,7 @@
             const docRef = doc(db, "incidentes", incidenteId);
             const docSnap = await getDoc(docRef);
             if (!docSnap.exists()) {
-                alert("Incidente no encontrado.");
+                showToast("Incidente no encontrado.", 'error');
                 return;
             }
             const incidente = docSnap.data();
@@ -1528,7 +1766,10 @@
                 licenciaDesdeInput.addEventListener('change', calcularAlta); diasInput.addEventListener('input', calcularAlta);
                 form.addEventListener('submit', async function(e) {
                     e.preventDefault();
-                    if (!this.elements.licenciaDesde.value || !this.elements.dias.value || !this.elements.encuadra.value) { alert('Complete los campos de Licencia.'); return; }
+                    if (!this.elements.licenciaDesde.value || !this.elements.dias.value || !this.elements.encuadra.value) { 
+                        showToast('Complete los campos de Licencia.', 'error'); 
+                        return; 
+                    }
                     
                     const medicoMatricula = this.elements.medicoMatricula.value.trim().replace(/\//g, '_'); // SANITIZE
                     const medicoNombre = this.elements.medicoNombre.value.trim();
@@ -1580,10 +1821,11 @@
                             encuadra: this.elements.encuadra.value
                         });
                         await logActivity(isCompleted ? 'UPDATE_INCIDENTE' : 'COMPLETE_INCIDENTE', `Incidente de ${incidente.empleado}`);
-                        alert('Guardado.');
+                        showToast('Guardado.', 'success');
                         showView('completados');
                     } catch (error) {
                         console.error(error);
+                        showToast('Error al guardar.', 'error');
                     }
                 });
             }
@@ -1856,7 +2098,7 @@
 
         function exportAvisosToXLS() {
             if (currentAvisosSearchResult.length === 0) {
-                alert("No hay datos para exportar. Por favor, realice una búsqueda primero.");
+                showToast("No hay datos para exportar. Realice una búsqueda.", 'warning');
                 return;
             }
 
@@ -1867,7 +2109,7 @@
                 'Fecha Aviso': aviso.fecha,
                 'Estado': aviso.status,
                 'Diagnóstico': aviso.diagnostico || 'N/A',
-                'Encuadre': aviso.encuadre || 'N/A' // La exportación usará el dato 'encuadre' del aviso (podría no estar actualizado si es antiguo)
+                'Encuadre': aviso.encuadra || 'N/A' // La exportación usará el dato 'encuadre' del aviso (podría no estar actualizado si es antiguo)
             }));
 
             const ws = XLSX.utils.json_to_sheet(dataToExport);
@@ -1964,7 +2206,7 @@
                 await logActivity('UPDATE_PROFESIONAL_OBS', `Observación para ${matricula}: ${observaciones}`);
             } catch (error) {
                 console.error("Error al actualizar observación: ", error);
-                alert("Error al guardar la observación.");
+                showToast("Error al guardar la observación.", 'error');
             }
         }
         // --- FIN NUEVA FUNCIÓN ---
@@ -2270,7 +2512,21 @@
             const dateField = formatDate(isPending ? incidente.solicitudFecha : (incidente.reconocimiento?.fechaEvaluacion));
             const btnText = isPending ? 'Evaluar' : 'Ver/Editar';
             const view = isPending ? 'pendientes' : 'completados';
-            return `<tr class="bg-white border-b hover:bg-gray-50"><td class="px-6 py-4">${incidente.id || 'N/A'}</td><td class="px-6 py-4">${incidente.afiliado || 'N/A'}</td><td class="px-6 py-4">${incidente.empleado}</td><td class="px-6 py-4">${getUnidadTag(incidente.unidad)}</td><td class="px-6 py-4">${dateField}</td><td class="px-6 py-4"><button onclick="openFormulario('${incidente.id}', '${view}')" class="text-blue-600 hover:underline">${btnText}</button></td></tr>`;
+            
+            // Nuevo: Lógica de acciones
+            let actionsHtml = `<button onclick="openFormulario('${incidente.id}', '${view}')" class="text-blue-600 hover:underline">${btnText}</button>`;
+            if (selectedRole === 'administrador' && incidente.avisoId) {
+                actionsHtml += `<button onclick="deleteAviso('${incidente.avisoId}')" class="text-red-600 hover:text-red-800 ml-4" title="Eliminar Incidente y Aviso"><i class="fas fa-trash"></i></button>`;
+            }
+
+            return `<tr class="bg-white border-b hover:bg-gray-50">
+                        <td class="px-6 py-4">${incidente.id || 'N/A'}</td>
+                        <td class="px-6 py-4">${incidente.afiliado || 'N/A'}</td>
+                        <td class="px-6 py-4">${incidente.empleado}</td>
+                        <td class="px-6 py-4">${getUnidadTag(incidente.unidad)}</td>
+                        <td class="px-6 py-4">${dateField}</td>
+                        <td class="px-6 py-4">${actionsHtml}</td>
+                    </tr>`;
         }
 
         function getEvaluadoRowHtml(inc) {
@@ -2331,36 +2587,6 @@
         }
 
         // --- FIN: FUNCIONES DE PAGINACIÓN ---
-        
-        // CAMBIO: filterTable ahora puede leer el valor de inputs de texto o textareas
-        /*
-        function filterTable(inputId, tableId, columnsToSearch) { 
-            const input = document.getElementById(inputId), filter = input.value.toUpperCase(), table = document.getElementById(tableId), tr = table.getElementsByTagName("tr"); 
-            for (let i = 0; i < tr.length; i++) { 
-                let found = false; 
-                const tds = tr[i].getElementsByTagName("td"); 
-                if (tds.length > 0) { 
-                    for (const colIndex of columnsToSearch) { 
-                        if(tds[colIndex]) { 
-                            let cellText = '';
-                            const inputEl = tds[colIndex].querySelector('input[type="text"], textarea'); // Revisa input o textarea
-                            if (inputEl) {
-                                cellText = inputEl.value; // Usa el valor del input/textarea
-                            } else {
-                                cellText = (tds[colIndex].textContent || tds[colIndex].innerText); // Usa el texto normal
-                            }
-                            
-                            if (cellText.toUpperCase().indexOf(filter) > -1) { 
-                                found = true; 
-                                break; 
-                            } 
-                        } 
-                    } 
-                    tr[i].style.display = found ? "" : "none"; 
-                } 
-            } 
-        }
-        */
         
         function sortTable(tableId, colIndex) {
             const tbody = document.getElementById(tableId);
@@ -2445,18 +2671,34 @@
             document.getElementById('solicitud-fecha').value = today;
             document.getElementById('search-fecha-aviso-desde').value = today;
             document.getElementById('search-fecha-aviso-hasta').value = today;
-            // CAMBIO: Añadidas las nuevas funciones al objeto window
+
+            // --- NUEVO: Listeners para el modal de confirmación ---
+            document.getElementById('confirm-modal-cancel-btn').addEventListener('click', closeConfirmModal);
+            document.getElementById('confirm-modal-confirm-btn').addEventListener('click', () => {
+                if (typeof _onConfirmCallback === 'function') {
+                    _onConfirmCallback();
+                }
+                closeConfirmModal();
+            });
+            
+            // --- CAMBIO: Añadidas las nuevas funciones al objeto window ---
             Object.assign(window, { 
                 selectRole, goBackToRoleSelection, continueLoginPersonal, goBackToLogin, logout, 
                 showView, openUsuarioModal, closeUsuarioModal, precargarDatosUsuario, resetPassword, deleteUser, 
-                handleFileUpload, openAvisoModal, closeAvisoModal, precargarDatosAfiliado, deleteAviso, 
+                handleFileUpload, openAvisoModal, closeAvisoModal, precargarDatosAfiliado, 
+                deleteAviso, // El wrapper
+                __internalDeleteAviso, // El real
+                openConfirmModal, // Funciones del modal
+                closeConfirmModal, // Funciones del modal
+                checkAvisoSuperposicion, // Nueva validación
                 openFormulario, updateAsistencia, filtrarEvaluadosPorFecha, filtrarPresentarse, searchAntecedentes, 
                 openChangePasswordModal, closeChangePasswordModal, 
                 filterTable, // Ahora es el trigger de repaginado
                 changePage, // Nueva función de paginación
                 openAvisosFechaModal, closeAvisosFechaModal, searchAvisosPorFecha, exportAvisosToXLS, 
                 toggleVerificado, sortTable, synchronizeAndListenProfesionales, listenToProfesionalesCollection, 
-                fetchMedicoInfo, updateProfesionalObservaciones, handleObsTextareaKeydown 
+                fetchMedicoInfo, updateProfesionalObservaciones, handleObsTextareaKeydown,
+                showToast // Toast
             }); 
         };
     </script>
