@@ -7,6 +7,8 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <!-- Agregamos Chart.js para los gráficos -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         /* Estilos personalizados y para impresión */
         @media print {
@@ -169,10 +171,11 @@
                     <h2 class="text-2xl font-semibold">Control de Ausentismo</h2>
                     <p id="user-role" class="text-sm text-gray-400 capitalize"></p>
                 </div>
-                <nav class="flex-1 px-6 py-4 space-y-2">
+                <nav class="flex-1 px-6 py-4 space-y-2 overflow-y-auto">
                     <!-- Links para Administrador -->
                     <div id="admin-links" class="hidden">
                         <a href="#" onclick="showView('inicio')" class="flex items-center px-4 py-2 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"><i class="fas fa-home w-6"></i> Inicio</a>
+                        <a href="#" onclick="showView('metrics')" class="flex items-center px-4 py-2 text-amber-400 font-semibold rounded-md hover:bg-gray-700 hover:text-white"><i class="fas fa-chart-pie w-6"></i> Métricas</a>
                         <a href="#" onclick="showView('usuarios')" class="flex items-center px-4 py-2 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"><i class="fas fa-users-cog w-6"></i> Gestionar Usuarios</a>
                         <a href="#" onclick="showView('importar')" class="flex items-center px-4 py-2 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"><i class="fas fa-file-excel w-6"></i> Importar Personal</a>
                         <a href="#" onclick="showView('avisos-pendientes')" class="flex items-center px-4 py-2 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"><i class="fas fa-folder-open w-6"></i> Avisos Pendientes</a>
@@ -183,6 +186,7 @@
                     <!-- Links para Personal -->
                     <div id="personal-links" class="hidden">
                          <a href="#" onclick="showView('inicio')" class="flex items-center px-4 py-2 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"><i class="fas fa-home w-6"></i> Inicio</a>
+                         <a href="#" onclick="showView('metrics')" class="flex items-center px-4 py-2 text-amber-400 font-semibold rounded-md hover:bg-gray-700 hover:text-white"><i class="fas fa-chart-pie w-6"></i> Métricas</a>
                          <a href="#" onclick="showView('avisos-pendientes')" class="flex items-center px-4 py-2 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"><i class="fas fa-folder-open w-6"></i> Avisos Pendientes</a>
                          <a href="#" onclick="showView('avisos-visados')" class="flex items-center px-4 py-2 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"><i class="fas fa-folder-check w-6"></i> Avisos Visados</a>
                          <a href="#" onclick="showView('presentarse')" class="flex items-center px-4 py-2 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"><i class="fas fa-calendar-check w-6"></i> Presentarse a Trabajar</a>
@@ -190,6 +194,7 @@
                     <!-- Links para Reconocimientos Médicos -->
                     <div id="reconocimientos-links" class="hidden">
                         <a href="#" onclick="showView('inicio')" class="flex items-center px-4 py-2 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"><i class="fas fa-home w-6"></i> Inicio</a>
+                        <a href="#" onclick="showView('metrics')" class="flex items-center px-4 py-2 text-amber-400 font-semibold rounded-md hover:bg-gray-700 hover:text-white"><i class="fas fa-chart-pie w-6"></i> Métricas</a>
                         <a href="#" onclick="showView('pendientes')" class="flex items-center px-4 py-2 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"><i class="fas fa-hourglass-half w-6"></i> Pendientes</a>
                         <a href="#" onclick="showView('completados')" class="flex items-center px-4 py-2 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"><i class="fas fa-check-double w-6"></i> Completados</a>
                         <a href="#" onclick="showView('evaluados')" class="flex items-center px-4 py-2 text-gray-300 rounded-md hover:bg-gray-700 hover:text-white"><i class="fas fa-history w-6"></i> Evaluados por Fecha</a>
@@ -224,6 +229,120 @@
                     <!-- Vistas -->
                      <div id="inicio-view" class="view-content hidden fade-in">
                         <!-- El contenido se generará dinámicamente -->
+                    </div>
+                    
+                    <!-- NUEVO: VISTA DE MÉTRICAS -->
+                    <div id="metrics-view" class="view-content hidden fade-in">
+                        <div class="flex justify-between items-center mb-6">
+                             <h2 class="text-3xl font-bold text-gray-700">Tablero de Métricas y Estadísticas</h2>
+                             <button onclick="calculateAndRenderMetrics()" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition"><i class="fas fa-sync-alt mr-2"></i>Actualizar</button>
+                        </div>
+                        
+                        <!-- KPIs Cards -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                            <div class="bg-white rounded-2xl shadow-lg p-6 flex items-center">
+                                <div class="p-4 bg-yellow-100 rounded-full text-yellow-600 mr-4">
+                                    <i class="fas fa-folder-open text-2xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500 text-sm">Avisos Pendientes</p>
+                                    <h3 id="metric-pending-count" class="text-2xl font-bold text-gray-800">...</h3>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-2xl shadow-lg p-6 flex items-center">
+                                <div class="p-4 bg-green-100 rounded-full text-green-600 mr-4">
+                                    <i class="fas fa-check-circle text-2xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500 text-sm">Total Visados</p>
+                                    <h3 id="metric-completed-count" class="text-2xl font-bold text-gray-800">...</h3>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-2xl shadow-lg p-6 flex items-center">
+                                <div class="p-4 bg-blue-100 rounded-full text-blue-600 mr-4">
+                                    <i class="fas fa-procedures text-2xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500 text-sm">Carpetas Vigentes</p>
+                                    <h3 id="metric-active-count" class="text-2xl font-bold text-gray-800">...</h3>
+                                </div>
+                            </div>
+                            <div class="bg-white rounded-2xl shadow-lg p-6 flex items-center">
+                                <div class="p-4 bg-purple-100 rounded-full text-purple-600 mr-4">
+                                    <i class="fas fa-user-injured text-2xl"></i>
+                                </div>
+                                <div>
+                                    <p class="text-gray-500 text-sm">Día Más Frecuente</p>
+                                    <h3 id="metric-busy-day" class="text-lg font-bold text-gray-800">...</h3>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gráficos Fila 1 -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                            <!-- Encuadres Vigentes -->
+                            <div class="bg-white rounded-2xl shadow-lg p-6">
+                                <h3 class="text-lg font-bold text-gray-700 mb-4 border-b pb-2">Encuadres Vigentes</h3>
+                                <div class="relative h-64 w-full">
+                                    <canvas id="chart-encuadres"></canvas>
+                                </div>
+                            </div>
+                            <!-- Día de la Semana -->
+                            <div class="bg-white rounded-2xl shadow-lg p-6">
+                                <h3 class="text-lg font-bold text-gray-700 mb-4 border-b pb-2">Avisos por Día de la Semana</h3>
+                                <div class="relative h-64 w-full">
+                                    <canvas id="chart-days"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                         <!-- Gráficos Fila 2 -->
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                            <!-- Presentismo Diario (Últimos 14 días) -->
+                            <div class="bg-white rounded-2xl shadow-lg p-6">
+                                <h3 class="text-lg font-bold text-gray-700 mb-4 border-b pb-2">Personal a Presentarse (Próx. días)</h3>
+                                <div class="relative h-64 w-full">
+                                    <canvas id="chart-presentarse"></canvas>
+                                </div>
+                            </div>
+                            <!-- Estacionalidad -->
+                            <div class="bg-white rounded-2xl shadow-lg p-6">
+                                <h3 class="text-lg font-bold text-gray-700 mb-4 border-b pb-2">Tendencia Mensual (Estacionalidad)</h3>
+                                <div class="relative h-64 w-full">
+                                    <canvas id="chart-season"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gráficos Fila 3 - Específico por Unidad (Solo Admin/Recon) -->
+                        <div id="container-chart-units" class="bg-white rounded-2xl shadow-lg p-6 mb-8 hidden">
+                            <h3 class="text-lg font-bold text-gray-700 mb-4 border-b pb-2">General por Establecimiento</h3>
+                            <div class="relative h-72 w-full">
+                                <canvas id="chart-units"></canvas>
+                            </div>
+                        </div>
+
+                        <!-- Ranking de Agentes -->
+                        <div class="bg-white rounded-2xl shadow-lg p-6">
+                            <h3 class="text-lg font-bold text-gray-700 mb-4 border-b pb-2">Ranking: Agentes con más días de licencia (Último Año)</h3>
+                            <div class="overflow-x-auto">
+                                <table class="w-full text-sm text-left text-gray-500">
+                                    <thead class="text-xs text-gray-700 uppercase bg-gray-50">
+                                        <tr>
+                                            <th class="px-6 py-3">#</th>
+                                            <th class="px-6 py-3">Afiliado</th>
+                                            <th class="px-6 py-3">Nombre</th>
+                                            <th class="px-6 py-3">Unidad</th>
+                                            <th class="px-6 py-3 text-center">Total Días</th>
+                                            <th class="px-6 py-3 text-center">Cant. Carpetas</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="ranking-table-body">
+                                        <tr><td colspan="6" class="text-center py-4">Calculando...</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
                     </div>
 
                     <div id="usuarios-view" class="view-content hidden fade-in">
@@ -864,6 +983,9 @@
         let unsubscribeRegistro = null;
         let unsubscribeProfesionales = null;
 
+        // --- VARIABLES DE GRÁFICOS ---
+        let charts = {}; // Para guardar las instancias de Chart.js y poder destruirlas
+
         // --- HELPER FUNCTIONS ---
         function formatDate(dateString) {
             if (!dateString || !dateString.includes('-')) return dateString || 'N/A';
@@ -1092,7 +1214,9 @@
             document.getElementById(`${viewId}-view`).classList.remove('hidden');
             
             const titles = {
-                'inicio': 'Inicio', 'usuarios': 'Gestión de Usuarios', 'importar': 'Importar Personal',
+                'inicio': 'Inicio', 
+                'metrics': 'Tablero de Métricas',
+                'usuarios': 'Gestión de Usuarios', 'importar': 'Importar Personal',
                 'avisos-pendientes': 'Avisos de Carpetas Pendientes', 'avisos-visados': 'Avisos de Carpetas Visados',
                 'pendientes': 'Incidentes Pendientes', 'completados': 'Incidentes Completados',
                 'form': 'Formulario de Reconocimiento Médico', 'presentarse': 'Consultar Personal a Presentarse',
@@ -1115,6 +1239,7 @@
             }
 
             if (viewId === 'inicio') renderInicioView();
+            if (viewId === 'metrics') calculateAndRenderMetrics(); // INICIA LA LÓGICA DE MÉTRICAS
             if (viewId === 'avisos-pendientes') listenToAvisos('Pendiente');
             if (viewId === 'avisos-visados') listenToAvisos('Completado');
             if (viewId === 'pendientes') listenToIncidentes('Pendiente');
@@ -1160,10 +1285,14 @@
             function createInfoCard(icon, title, text) {
                 return `<div class="bg-white p-6 rounded-2xl shadow-lg flex items-start space-x-4"><div class="bg-blue-100 text-blue-600 p-3 rounded-full flex-shrink-0"><i class="${icon} text-xl w-6 text-center"></i></div><div><h3 class="font-bold text-lg text-gray-800 mb-1">${title}</h3><p class="text-gray-600 text-sm">${text}</p></div></div>`;
             }
+            
+            // Añadimos la tarjeta de Métricas para todos los roles
+            const metricsCard = createInfoCard('fas fa-chart-pie', 'Métricas y Estadísticas', 'Visualice gráficos sobre avisos pendientes, encuadres, ausentismo por día y rankings.');
 
             switch(selectedRole) {
                 case 'administrador':
                     content += `<p class="text-gray-600 mb-8">Desde este panel de administrador, tiene acceso completo al sistema. A continuación se detallan las secciones disponibles:</p><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">`;
+                    content += metricsCard;
                     content += createInfoCard('fas fa-users-cog', 'Gestionar Usuarios', 'Cree, modifique, blanquee contraseñas o elimine cuentas de usuario. Asigne roles y permisos de acceso a las unidades.');
                     content += createInfoCard('fas fa-file-excel', 'Importar Personal', 'Cargue la base de datos completa del personal mediante un archivo Excel para mantener el sistema actualizado.');
                     content += createInfoCard('fas fa-folder-open', 'Avisos Pendientes', 'Visualice y gestione los avisos de ausentismo que aún no han sido evaluados por el personal médico. Puede editar y eliminar avisos desde aquí.');
@@ -1175,6 +1304,7 @@
                     break;
                 case 'personal':
                     content += `<p class="text-gray-600 mb-8">Bienvenido al portal de su unidad. Desde aquí podrá gestionar el ausentismo del personal a su cargo:</p><div class="grid grid-cols-1 md:grid-cols-2 gap-6">`;
+                    content += metricsCard;
                     content += createInfoCard('fas fa-folder-open', 'Avisos Pendientes', 'Cree nuevos avisos de ausentismo y edite los existentes mientras se encuentren pendientes de evaluación médica.');
                     content += createInfoCard('fas fa-folder-check', 'Avisos Visados', 'Consulte el historial de avisos de su unidad que ya han sido completados y visados por Reconocimientos Médicos.');
                     content += createInfoCard('fas fa-calendar-check', 'Presentarse a Trabajar', 'Verifique qué agentes de su unidad deben presentarse a trabajar en una fecha específica y registre si se presentaron o comunicaron.');
@@ -1182,6 +1312,7 @@
                     break;
                 case 'reconocimientos':
                      content += `<p class="text-gray-600 mb-8">Este es su panel de gestión médica. A continuación se detallan sus herramientas de trabajo:</p><div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">`;
+                    content += metricsCard;
                     content += createInfoCard('fas fa-hourglass-half', 'Pendientes', 'Acceda a la lista de todos los incidentes médicos que requieren su evaluación para determinar la licencia correspondiente.');
                     content += createInfoCard('fas fa-check-double', 'Completados', 'Revise y edite los reconocimientos que ya ha completado. Puede corregir o añadir información si es necesario.');
                     content += createInfoCard('fas fa-history', 'Evaluados por Fecha', 'Busque y filtre todos los reconocimientos médicos que se realizaron en una fecha específica.');
@@ -1192,6 +1323,224 @@
                     break;
             }
             container.innerHTML = content;
+        }
+
+        // --- LÓGICA DE MÉTRICAS ---
+        async function calculateAndRenderMetrics() {
+            // 1. Determinar restricciones según rol
+            const isRestricted = selectedRole === 'personal' && currentUserUnidad !== 'TODAS';
+            
+            // Mostrar gráfico de unidades solo a Admin/Recon
+            const unitChartContainer = document.getElementById('container-chart-units');
+            if (!isRestricted && (selectedRole === 'administrador' || selectedRole === 'reconocimientos')) {
+                unitChartContainer.classList.remove('hidden');
+            } else {
+                unitChartContainer.classList.add('hidden');
+            }
+
+            // 2. Obtener datos (Avisos e Incidentes)
+            // Nota: En una app real con miles de docs, esto se optimizaría con querys específicas.
+            // Aquí traemos las colecciones para procesar en JS dada la estructura actual.
+            
+            let qAvisos = collection(db, "avisos");
+            let qIncidentes = collection(db, "incidentes");
+            
+            if (isRestricted) {
+                qAvisos = query(collection(db, "avisos"), where("unidad", "==", currentUserUnidad));
+                // Incidentes también deberían filtrarse, pero Firestore requiere índices compuestos.
+                // Filtraremos en memoria los incidentes para evitar errores de índice por ahora.
+            }
+
+            const [avisosSnap, incidentesSnap] = await Promise.all([
+                getDocs(qAvisos),
+                getDocs(qIncidentes)
+            ]);
+
+            // 3. Procesar Datos en Memoria
+            const avisos = avisosSnap.docs.map(d => d.data());
+            // Filtro manual de incidentes si es restricted (para asegurar consistencia)
+            const incidentes = incidentesSnap.docs.map(d => d.data()).filter(inc => !isRestricted || inc.unidad === currentUserUnidad);
+
+            // --- KPI: Conteos Básicos ---
+            const pendingCount = avisos.filter(a => a.status === 'Pendiente').length;
+            // Usamos incidentes completados para "visados" ya que es más robusto
+            const completedIncidentes = incidentes.filter(i => i.estado === 'Completado');
+            const completedCount = completedIncidentes.length;
+
+            // --- KPI: Encuadres Vigentes ---
+            const today = new Date().toISOString().slice(0, 10);
+            const vigentes = completedIncidentes.filter(i => i.reconocimiento && i.reconocimiento.altaDesde >= today);
+            const activeCount = vigentes.length;
+
+            // --- KPI: Día de la semana más ocupado (Histórico completo de avisos) ---
+            const daysCount = {0:0, 1:0, 2:0, 3:0, 4:0, 5:0, 6:0}; // 0=Lunes (ajustaremos)
+            avisos.forEach(a => {
+                if(a.fecha) {
+                    // getDay() devuelve 0 para Domingo, 1 Lunes...
+                    // Queremos Lunes=0 ... Domingo=6 para el gráfico
+                    let dayIndex = new Date(a.fecha + 'T00:00:00').getDay(); 
+                    // Ajuste: JS Domingo=0. ChartJS Lunes=0 -> Domingo=6
+                    // Si dayIndex es 0 (Domingo), lo pasamos a 6. Si es 1 (Lunes), a 0.
+                    let adjustedIndex = dayIndex === 0 ? 6 : dayIndex - 1;
+                    daysCount[adjustedIndex]++;
+                }
+            });
+            const daysLabels = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo'];
+            const maxDayVal = Math.max(...Object.values(daysCount));
+            const maxDayIndex = Object.keys(daysCount).find(key => daysCount[key] === maxDayVal);
+            const busyDayName = daysLabels[maxDayIndex] || 'N/A';
+
+            // --- GRÁFICO: Encuadres (De los Completados) ---
+            const encuadresMap = {};
+            completedIncidentes.forEach(i => {
+                const enc = i.reconocimiento?.encuadra || 'Sin Definir';
+                encuadresMap[enc] = (encuadresMap[enc] || 0) + 1;
+            });
+
+            // --- GRÁFICO: Estacionalidad (Meses) ---
+            const monthsMap = {};
+            const monthsLabels = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            incidentes.forEach(i => {
+                const fecha = i.reconocimiento?.fechaEvaluacion || i.solicitudFecha;
+                if(fecha) {
+                    const monthIndex = new Date(fecha + 'T00:00:00').getMonth();
+                    monthsMap[monthIndex] = (monthsMap[monthIndex] || 0) + 1;
+                }
+            });
+            const monthsData = Array.from({length: 12}, (_, i) => monthsMap[i] || 0);
+
+            // --- GRÁFICO: Presentarse a Trabajar (Próximos 14 días) ---
+            // Agrupar cuántas personas deben volver cada día
+            const presentarseMap = {};
+            vigentes.forEach(i => {
+                const alta = i.reconocimiento?.altaDesde;
+                if(alta) {
+                    // Fecha de presentación es alta + 1 día
+                    const fechaAlta = new Date(alta + 'T00:00:00');
+                    fechaAlta.setDate(fechaAlta.getDate() + 1);
+                    const fechaStr = fechaAlta.toISOString().slice(0, 10);
+                    if (fechaStr >= today) { // Solo futuros
+                        presentarseMap[fechaStr] = (presentarseMap[fechaStr] || 0) + 1;
+                    }
+                }
+            });
+            // Ordenar fechas y tomar las primeras 14
+            const sortedDates = Object.keys(presentarseMap).sort();
+            const nextDates = sortedDates.slice(0, 14);
+            const presentarseData = nextDates.map(d => presentarseMap[d]);
+            const formattedNextDates = nextDates.map(d => formatDate(d).slice(0, 5)); // dd/mm
+
+            // --- RANKING: Agentes con más días (Último Año) ---
+            const oneYearAgo = new Date();
+            oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+            const oneYearAgoStr = oneYearAgo.toISOString().slice(0, 10);
+            
+            const rankingMap = {}; // { 'Afiliado': { nombre, unidad, totalDias, count } }
+            
+            completedIncidentes.forEach(i => {
+                const fechaEv = i.reconocimiento?.fechaEvaluacion;
+                if (fechaEv && fechaEv >= oneYearAgoStr) {
+                    const dias = parseInt(i.reconocimiento?.dias || 0, 10);
+                    const key = i.afiliado;
+                    if (!rankingMap[key]) {
+                        rankingMap[key] = { 
+                            afiliado: i.afiliado, 
+                            nombre: i.empleado, 
+                            unidad: i.unidad, 
+                            totalDias: 0, 
+                            count: 0 
+                        };
+                    }
+                    rankingMap[key].totalDias += dias;
+                    rankingMap[key].count += 1;
+                }
+            });
+
+            const rankingArray = Object.values(rankingMap)
+                .sort((a, b) => b.totalDias - a.totalDias)
+                .slice(0, 10); // Top 10
+
+            // --- GENERAL POR ESTABLECIMIENTO (Solo si no restricted) ---
+            const unitsMap = {};
+            if (!isRestricted) {
+                avisos.forEach(a => {
+                    unitsMap[a.unidad] = (unitsMap[a.unidad] || 0) + 1;
+                });
+            }
+
+            // 4. Renderizar en DOM
+            document.getElementById('metric-pending-count').textContent = pendingCount;
+            document.getElementById('metric-completed-count').textContent = completedCount;
+            document.getElementById('metric-active-count').textContent = activeCount;
+            document.getElementById('metric-busy-day').textContent = busyDayName;
+
+            // Render Ranking Table
+            const rankingBody = document.getElementById('ranking-table-body');
+            rankingBody.innerHTML = '';
+            if(rankingArray.length === 0) {
+                rankingBody.innerHTML = '<tr><td colspan="6" class="text-center py-4">No hay datos suficientes en el último año.</td></tr>';
+            } else {
+                rankingArray.forEach((r, idx) => {
+                    rankingBody.innerHTML += `
+                        <tr class="border-b hover:bg-gray-50">
+                            <td class="px-6 py-3 font-bold">${idx + 1}</td>
+                            <td class="px-6 py-3">${r.afiliado}</td>
+                            <td class="px-6 py-3">${r.nombre}</td>
+                            <td class="px-6 py-3">${getUnidadTag(r.unidad)}</td>
+                            <td class="px-6 py-3 text-center font-bold text-red-600">${r.totalDias}</td>
+                            <td class="px-6 py-3 text-center">${r.count}</td>
+                        </tr>
+                    `;
+                });
+            }
+
+            // 5. Renderizar Gráficos (Chart.js)
+            renderChart('chart-encuadres', 'doughnut', Object.keys(encuadresMap), Object.values(encuadresMap), 'Encuadres');
+            renderChart('chart-days', 'bar', daysLabels, Object.values(daysCount), 'Avisos por Día');
+            renderChart('chart-season', 'line', monthsLabels, monthsData, 'Tendencia Mensual');
+            renderChart('chart-presentarse', 'bar', formattedNextDates, presentarseData, 'Personal a Reintegrarse');
+            
+            if(!isRestricted) {
+                renderChart('chart-units', 'bar', Object.keys(unitsMap), Object.values(unitsMap), 'Total Avisos por Unidad');
+            }
+        }
+
+        function renderChart(canvasId, type, labels, data, label) {
+            const ctx = document.getElementById(canvasId).getContext('2d');
+            
+            // Destruir gráfico anterior si existe para evitar superposición
+            if (charts[canvasId]) {
+                charts[canvasId].destroy();
+            }
+
+            // Colores
+            const bgColors = [
+                'rgba(54, 162, 235, 0.6)', 'rgba(255, 99, 132, 0.6)', 'rgba(255, 206, 86, 0.6)', 
+                'rgba(75, 192, 192, 0.6)', 'rgba(153, 102, 255, 0.6)', 'rgba(255, 159, 64, 0.6)',
+                'rgba(199, 199, 199, 0.6)', 'rgba(83, 102, 255, 0.6)'
+            ];
+
+            charts[canvasId] = new Chart(ctx, {
+                type: type,
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: label,
+                        data: data,
+                        backgroundColor: type === 'line' ? 'rgba(54, 162, 235, 0.2)' : bgColors,
+                        borderColor: type === 'line' ? 'rgba(54, 162, 235, 1)' : bgColors.map(c => c.replace('0.6', '1')),
+                        borderWidth: 1,
+                        fill: type === 'line'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: (type === 'bar' || type === 'line') ? {
+                        y: { beginAtZero: true }
+                    } : {}
+                }
+            });
         }
 
         // --- GESTIÓN DE USUARIOS (ADMIN) ---
@@ -2698,6 +3047,7 @@
                 openAvisosFechaModal, closeAvisosFechaModal, searchAvisosPorFecha, exportAvisosToXLS, 
                 toggleVerificado, sortTable, synchronizeAndListenProfesionales, listenToProfesionalesCollection, 
                 fetchMedicoInfo, updateProfesionalObservaciones, handleObsTextareaKeydown,
+                calculateAndRenderMetrics, // Función de métricas
                 showToast // Toast
             }); 
         };
