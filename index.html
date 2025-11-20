@@ -92,6 +92,18 @@
         .dark ::-webkit-scrollbar-track { background: #1f2937; }
         .dark ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 5px; }
         .dark ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+        /* Estilo para las sugerencias de búsqueda */
+        #lookup-results-container .suggestion-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        #lookup-results-container .suggestion-item:hover {
+            background-color: #e5e7eb; /* light gray for hover */
+        }
+        .dark #lookup-results-container .suggestion-item:hover {
+            background-color: #4b5563; /* dark gray for hover */
+        }
     </style>
 </head>
 <body class="bg-gray-100 font-sans dark:bg-gray-900 dark:text-gray-100 transition-colors duration-300">
@@ -282,7 +294,15 @@
                         <h2 class="text-3xl font-bold mb-6 text-gray-700 dark:text-white">Buscar Antecedentes Médicos</h2>
                         <div class="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg mb-6 border dark:border-gray-700">
                             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
-                                <div><label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">N° de Afiliado</label><input type="text" id="search-antecedentes-afiliado" class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg block w-full p-2.5"></div>
+                                <!-- CAMPO MODIFICADO PARA INCLUIR AUTOCOMPLETADO POR NOMBRE -->
+                                <div class="relative">
+                                    <label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">N° Afiliado o Nombre del Agente</label>
+                                    <input type="text" id="search-employee-lookup" class="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg block p-2.5" oninput="handleEmployeeLookup(event)">
+                                    <input type="hidden" id="selected-afiliado-id"> <!-- Para almacenar el Afiliado ID real -->
+                                    <div id="lookup-results-container" class="absolute z-10 w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg shadow-lg mt-1 max-h-48 overflow-y-auto hidden">
+                                        <!-- Resultados de la búsqueda de empleado aquí -->
+                                    </div>
+                                </div>
                                 <div><label class="block mb-2 text-sm font-medium text-gray-900 dark:text-white">Matrícula Profesional</label><input type="text" id="search-antecedentes-matricula" class="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 text-gray-900 dark:text-white text-sm rounded-lg block w-full p-2.5"></div>
                                 <div class="flex space-x-2">
                                     <button onclick="searchAntecedentes()" class="bg-blue-600 text-white py-2.5 px-5 rounded-lg hover:bg-blue-700 transition duration-300 shadow flex-grow">Buscar</button>
@@ -357,6 +377,7 @@
         let _onConfirmCallback = null;
         let paginationState = {};
         let allDataCache = {};
+        let allPersonnelCache = []; // Cache para la búsqueda de personal por nombre/afiliado
         const ROWS_PER_PAGE = 100;
         let charts = {};
         let unsubscribeAvisosPendientes = null, unsubscribeAvisosVisados = null, unsubscribePendientes = null, unsubscribeCompletados = null, unsubscribeUsers = null, unsubscribeRegistro = null, unsubscribeProfesionales = null;
@@ -418,6 +439,34 @@
         function openConfirmModal(message, onConfirmCallback) { document.getElementById('confirm-modal-message').textContent = message; _onConfirmCallback = onConfirmCallback; document.getElementById('confirm-modal').classList.add('flex'); document.getElementById('confirm-modal').classList.remove('hidden'); }
         function closeConfirmModal() { document.getElementById('confirm-modal').classList.add('hidden'); document.getElementById('confirm-modal').classList.remove('flex'); _onConfirmCallback = null; }
 
+        // Función auxiliar para normalizar texto (quitar acentos)
+        function normalizeText(text) {
+            if (!text) return '';
+            return text.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase();
+        }
+
+        // --- CARGA INICIAL DE PERSONAL PARA AUTOCOMPLETE ---
+        async function loadAllPersonnel() {
+            try {
+                const snapshot = await getDocs(collection(db, "personal"));
+                allPersonnelCache = snapshot.docs.map(doc => {
+                    const data = doc.data();
+                    // Normalizar y almacenar el nombre para búsquedas rápidas sin acentos/mayúsculas
+                    const normalizedName = normalizeText(data.nombreCompleto);
+                    return {
+                        afiliado: doc.id,
+                        nombreCompleto: data.nombreCompleto, // Almacenar el original para mostrar
+                        normalizedName: normalizedName,
+                        grado: data.grado || '',
+                        funcion: data.funcion || ''
+                    };
+                });
+                console.log(`Personnel cache loaded: ${allPersonnelCache.length} records.`);
+            } catch (error) {
+                console.error("Error loading personnel cache: ", error);
+            }
+        }
+        
         // --- LOGIN & AUTH ---
         document.getElementById('login-form').addEventListener('submit', async (e) => {
             e.preventDefault();
@@ -718,10 +767,18 @@
         async function filtrarPresentarse() { const tableId = 'presentarse-table', fecha = document.getElementById('fecha-presentarse').value, unidad = document.getElementById('unidad-presentarse').value; if (!fecha) return; const fechaPresentarse = new Date(fecha + 'T00:00:00'); fechaPresentarse.setDate(fechaPresentarse.getDate() - 1); const fechaAltaQuery = fechaPresentarse.toISOString().slice(0, 10); let conditions = [where("reconocimiento.altaDesde", "==", fechaAltaQuery)]; if (unidad !== 'TODAS') conditions.push(where("unidad", "==", unidad)); const q = query(collection(db, "incidentes"), ...conditions), snapshot = await getDocs(q); allDataCache[tableId] = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })); paginationState[tableId] = { currentPage: 1, rowsPerPage: ROWS_PER_PAGE }; renderPaginatedTable(tableId); }
         
         async function searchAntecedentes() { 
-            const tableId = 'antecedentes-table', afiliado = document.getElementById('search-antecedentes-afiliado').value.trim(), matricula = document.getElementById('search-antecedentes-matricula').value.trim(); 
+            const tableId = 'antecedentes-table'; 
+            // Usa el ID almacenado en el campo oculto o el valor directo del campo de búsqueda principal
+            const afiliado = document.getElementById('selected-afiliado-id').value.trim() || document.getElementById('search-employee-lookup').value.trim();
+            const matricula = document.getElementById('search-antecedentes-matricula').value.trim(); 
             const printBtn = document.getElementById('btn-print-history');
             printBtn.classList.add('hidden'); 
+            
+            // Limpia el ID oculto después de obtener el valor, a menos que el campo matricula esté lleno.
+            if (!matricula) document.getElementById('selected-afiliado-id').value = ''; 
+
             if (!afiliado && !matricula) return; 
+            
             let conditions = [where("estado", "==", "Completado")]; 
             if (afiliado) conditions.push(where("afiliado", "==", afiliado)); 
             if (matricula) conditions.push(where("reconocimiento.medicoMatricula", "==", matricula.replace(/\//g, '_'))); 
@@ -744,6 +801,72 @@
             if (afiliado && results.length > 0) {
                 printBtn.classList.remove('hidden');
             }
+        }
+        
+        function handleEmployeeLookup(event) {
+            const input = event.target;
+            const searchTerm = normalizeText(input.value.trim()); // Normaliza y capitaliza/mayúscula
+            const resultsContainer = document.getElementById('lookup-results-container');
+            const selectedAfiliadoIdInput = document.getElementById('selected-afiliado-id');
+            selectedAfiliadoIdInput.value = ''; // Limpiar el afiliado seleccionado al teclear
+
+            // Desactivar el autocompletado si el término es muy corto (menos de 3 caracteres)
+            if (searchTerm.length < 3) {
+                resultsContainer.classList.add('hidden');
+                resultsContainer.innerHTML = '';
+                return;
+            }
+
+            // MODIFICACIÓN DE LA LÓGICA DE FILTRADO
+            // Divide la búsqueda por espacios (múltiples palabras)
+            const searchTerms = searchTerm.split(/\s+/).filter(t => t.length > 0);
+
+            const filteredResults = allPersonnelCache.filter(p => {
+                const normalizedName = p.normalizedName;
+                const affiliate = p.afiliado;
+
+                // 1. Coincidencia por Afiliado (búsqueda parcial)
+                const matchesAffiliate = affiliate.includes(searchTerm);
+
+                // 2. Coincidencia por Nombre (TODOS los términos DEBEN estar presentes, sin importar el orden)
+                const matchesName = searchTerms.every(term => normalizedName.includes(term));
+
+                return matchesName || matchesAffiliate;
+            }).slice(0, 10); // Limitar a 10 resultados
+
+            if (filteredResults.length > 0) {
+                let html = '';
+                filteredResults.forEach(p => {
+                    // Nota: Se usa p.nombreCompleto (el original) para mostrar al usuario.
+                    html += `<div class="suggestion-item p-2 text-sm text-gray-800 dark:text-gray-100 border-b dark:border-gray-600 last:border-b-0" onclick="selectEmployee('${p.afiliado}', '${p.nombreCompleto}')">
+                        <span class="font-bold">${p.nombreCompleto}</span> <span class="text-xs text-gray-500 dark:text-gray-400">(${p.afiliado})</span>
+                    </div>`;
+                });
+                resultsContainer.innerHTML = html;
+                resultsContainer.classList.remove('hidden');
+            } else {
+                resultsContainer.innerHTML = `<div class="p-2 text-sm text-gray-500">No se encontraron coincidencias.</div>`;
+                resultsContainer.classList.remove('hidden');
+            }
+        }
+
+        function selectEmployee(afiliado, nombreCompleto) {
+            const input = document.getElementById('search-employee-lookup');
+            const selectedAfiliadoIdInput = document.getElementById('selected-afiliado-id');
+            const resultsContainer = document.getElementById('lookup-results-container');
+            
+            // Asigna el ID del afiliado al campo oculto para que searchAntecedentes lo use.
+            selectedAfiliadoIdInput.value = afiliado;
+            
+            // Muestra el nombre seleccionado en el input principal
+            input.value = `${nombreCompleto} (${afiliado})`; 
+            
+            // Oculta la lista de resultados
+            resultsContainer.classList.add('hidden');
+            resultsContainer.innerHTML = '';
+            
+            // Opcionalmente, ejecuta la búsqueda automáticamente al seleccionar
+            searchAntecedentes();
         }
 
         function generateAntecedentesReport() {
@@ -958,11 +1081,18 @@
             document.getElementById('confirm-modal-cancel-btn').addEventListener('click', closeConfirmModal);
             document.getElementById('confirm-modal-confirm-btn').addEventListener('click', () => { if (typeof _onConfirmCallback === 'function') { _onConfirmCallback(); } closeConfirmModal(); });
             if (localStorage.getItem('theme') === 'dark') { document.documentElement.classList.add('dark'); }
+            
+            // Carga inicial de la cache de personal
+            loadAllPersonnel();
+
             Object.assign(window, { 
                 selectRole, goBackToRoleSelection, continueLoginPersonal, goBackToLogin, logout, 
                 showView, openUsuarioModal, closeUsuarioModal, precargarDatosUsuario, resetPassword, deleteUser, 
                 handleFileUpload, openAvisoModal, closeAvisoModal, precargarDatosAfiliado, deleteAviso, __internalDeleteAviso, openConfirmModal, closeConfirmModal, checkAvisoSuperposicion, openFormulario, updateAsistencia, filtrarEvaluadosPorFecha, filtrarPresentarse, searchAntecedentes, openChangePasswordModal, closeChangePasswordModal, filterTable, changePage, openAvisosFechaModal, closeAvisosFechaModal, searchAvisosPorFecha, exportAvisosToXLS, toggleVerificado, sortTable, synchronizeAndListenProfesionales, listenToProfesionalesCollection, fetchMedicoInfo, updateProfesionalObservaciones, handleObsTextareaKeydown, calculateAndRenderMetrics, showToast, toggleDarkMode,
-                generateAntecedentesReport
+                generateAntecedentesReport,
+                handleEmployeeLookup, // Nueva función expuesta
+                selectEmployee, // Nueva función expuesta
+                normalizeText // Función de utilidad expuesta
             }); 
         };
     </script>
